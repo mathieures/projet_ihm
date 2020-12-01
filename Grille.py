@@ -21,21 +21,37 @@ class Grille:
 		Convertit des coordonnees du referentiel tkinter
 		vers des coordonnees de la Grille (2D)
 		"""
-		return ((pcoords[0] - self.origine[0]) / self.definition, (pcoords[1] - self.origine[1]) / self.definition / 2)
+		x = pcoords[0]
+		y = pcoords[1]
+		return (self.dico[(x,y)])
 
 	def convertGrilleCoords(self,pcoords):
 		"""
-		Convertit des coordonnees du referentiel tkinter
-		vers des coordonnees de la Grille (2D)
+		Convertit des coordonnees de la Grille (2D)
+		vers des coordonnees du referentiel tkinter
 		"""
-		return (pcoords[0] * self.definition, (pcoords[1] * self.definition)*2)
+		x = pcoords[0]
+		y = pcoords[1]
+		if(x >= self.taille_x or y >= self.taille_y or x < 0 or y < 0):
+			print("Mauvaises coordonnees")
+			exit(1)
+		d = self.definition
+		return(self.origine[0]-d*x + d * y, self.origine[1] + d * y/2 + d * x/2)
 
-	def __init__(self,pcanvas):
-		self.definition = 26 # taille des cotes d'un carre
-		self.taille_x = 3 # nombre de cases suivant l'axe x (qui va en bas à droite)
-		self.taille_y = 3 # nombre de cases suivant l'axe y (qui va en bas à gauche)
+	def createDico(self):
+		d = {}
+		for i in range(self.taille_x):
+			for j in range(self.taille_y):
+				d[self.convertGrilleCoords((i,j))] = (i,j)
+		return(d)
 
+
+	def __init__(self,pcanvas,pdefinition=20,ptaille_x=10,ptaille_y=10):
+		self.definition = pdefinition # taille des cotes d'un carre
+		self.taille_x = ptaille_x # nombre de cases suivant l'axe x (qui va en bas à droite)
+		self.taille_y = ptaille_y # nombre de cases suivant l'axe y (qui va en bas à gauche)
 		self.origine = (int(pcanvas.cget("width")) / 2,int(pcanvas.cget("height")) / 4) # coordonnees de l'origine (dans le referentiel tkinter)
+		self.dico = self.createDico()
 		print("origine :",self.origine,"; definition :",self.definition)
 		# pcanvas.create_line(self.origine,self.convertGrilleCoords((self.origine[0],self.origine[1]+10)))
 		# dessin de la grille
