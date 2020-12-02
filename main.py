@@ -4,7 +4,7 @@ import Cube
 
 CUBES = [] # liste des cubes places
 
-def newFile():
+def nouveauFichier():
 	global CUBES
 	# on efface tous les cubes
 	for cube in CUBES:
@@ -14,13 +14,15 @@ def newFile():
 	# on desactive l'option de sauvegarde
 	# deroulFichier.entryconfigure(2,state="disabled")
 
-def cancelLastCube():
+def annulerDernierCube():
 	global CUBES
 	if len(CUBES) > 0:
 		CUBES[-1].effacer(canv)
 		CUBES.pop()
 	else:
 		print("plus de cubes dans la liste")
+		#on desactive l'option pour annuler
+		deroulFichier.entryconfigure(1,state="disabled")
 
 def placerCube(pcoordsGrille):
 	global CUBES
@@ -56,8 +58,11 @@ bottomFrame.pack(side=tk.BOTTOM,expand=True,fill=tk.X,anchor="s")
 menuFichier = tk.Menubutton(menuFrame,text="Fichier",underline=0,relief="raised")
 
 deroulFichier = tk.Menu(menuFichier, tearoff=False)
-deroulFichier.add_command(label="Nouveau", command=newFile)
-deroulFichier.add_command(label="Annuler", command=cancelLastCube)
+deroulFichier.add_command(label="Nouveau", command=nouveauFichier)
+deroulFichier.add_command(label="Annuler", command=annulerDernierCube)
+
+deroulFichier.entryconfigure(1,state="disabled")
+
 # deroulFichier.add_command(label="Ouvrir", command=openFile)
 # deroulFichier.add_command(label="Sauver", command=saveFile)
 # deroulFichier.add_command(label="Quitter", command=quitApp)
