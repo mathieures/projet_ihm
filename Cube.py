@@ -2,11 +2,13 @@ import tkinter as tk
 import Grille
 
 class Cube:
+	
 	couleur_haut = "#bfbfbf"
 	couleur_gauche = "#808080"
 	couleur_droite = "#414141"
 
-	def __init__(self,pcanvas,pgrille,pcoordsGrille):
+	#constructeur
+	def __init__(self,pcanvas,pgrille,pcoordsGrille,ptags=None):
 		# pcoords est un point de la grille
 		d = pgrille.definition
 		centre = pgrille.grilleToCanvas(pcoordsGrille) 
@@ -21,11 +23,17 @@ class Cube:
 		D = (x+d,y+d/2) # bas droite
 		E = (x,y+d) # bas
 		F = (x,y-d) # haut
-		haut = pcanvas.create_polygon(centre,B,F,A,fill='#afafaf')
-		gauche = pcanvas.create_polygon(centre,A, C, E,fill='#414141')
-		droite = pcanvas.create_polygon(centre,B,D, E,fill='#808080')
+		self.__haut = pcanvas.create_polygon(centre,B,F,A,fill='#afafaf',outline="black",tags=ptags)
+		self.__gauche = pcanvas.create_polygon(centre,A, C, E,fill='#414141',outline="black",tags=ptags)
+		self.__droite = pcanvas.create_polygon(centre,B,D, E,fill='#808080',outline="black",tags=ptags)
 		# self.dessine(pcanvas, d, centre)
 
+	# destructeur
+	def __del__(self):
+		print("destruction d'un cube")
+
+	def effacer(self,pcanvas):
+		pcanvas.delete(self.__haut,self.__gauche,self.__droite)
 
 	# def dessine(self,pcanvas,d,pcoords):
 	# 	AB = [x-d,y-d/2]
