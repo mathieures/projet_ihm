@@ -72,12 +72,14 @@ class Grille:
 			y = int(y)
 		return (x,y)
 
+	def closestPointUp(self,pcoordsGrille):
+		return self.closestPoint((pcoordsGrille[0]-0.5,pcoordsGrille[1]-0.5))
 
 	def __init__(self,pcanvas,pdefinition=20,ptaille_x=10,ptaille_y=10):
 		self.__definition = pdefinition # taille des cotes d'un carre
 		self.__taille_x = ptaille_x # nombre de cases suivant l'axe x (qui va en bas à droite)
 		self.__taille_y = ptaille_y # nombre de cases suivant l'axe y (qui va en bas à gauche)
-		
+
 		self.__origine = (int(pcanvas.cget("width")) / 2,int(pcanvas.cget("height")) / 4) # coordonnees de l'origine (dans le referentiel tkinter)
 		print("origine :",self.origine,"; definition :",self.definition)
 		# dessin de la grille

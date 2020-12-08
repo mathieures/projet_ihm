@@ -2,31 +2,35 @@ import tkinter as tk
 import Grille
 
 class Cube:
-	
+
 	couleur_haut = "#bfbfbf"
 	couleur_gauche = "#808080"
 	couleur_droite = "#414141"
 
 	#constructeur
-	def __init__(self,pcanvas,pgrille,pcoordsGrille,ptags=None):
+	def __init__(self,pcanvas,pgrille,pcoordsGrille,ptags=None,phauteur=0):
 		# pcoords est un point de la grille
 		d = pgrille.definition
-		centre = pgrille.grilleToCanvas(pcoordsGrille) 
-		
+		self.coords = pgrille.grilleToCanvas(pcoordsGrille)
+
 		# dessin
-		x = centre[0]
-		y = centre[1]
-		
+		x = self.coords[0]
+		y = self.coords[1]
+		self.h = phauteur
+
+
 		A = (x-d,y-d/2) # haut gauche
 		B = (x+d,y-d/2) # haut droite
 		C = (x-d,y+d/2) # bas gauche
 		D = (x+d,y+d/2) # bas droite
 		E = (x,y+d) # bas
 		F = (x,y-d) # haut
-		self.__haut = pcanvas.create_polygon(centre,B,F,A,fill='#afafaf',outline="black",tags=ptags)
-		self.__gauche = pcanvas.create_polygon(centre,A, C, E,fill='#414141',outline="black",tags=ptags)
-		self.__droite = pcanvas.create_polygon(centre,B,D, E,fill='#808080',outline="black",tags=ptags)
-		# self.dessine(pcanvas, d, centre)
+		self.__haut = pcanvas.create_polygon(self.coords,B,F,A,fill='#afafaf',outline="black",tags=ptags)
+		self.__gauche = pcanvas.create_polygon(self.coords,A, C, E,fill='#414141',outline="black",tags=ptags)
+		self.__droite = pcanvas.create_polygon(self.coords,B,D, E,fill='#808080',outline="black",tags=ptags)
+		# self.dessine(pcanvas, d, self.coords)
+
+		self.id = self.__haut
 
 	# destructeur
 	def __del__(self):
