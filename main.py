@@ -4,17 +4,13 @@ import Cube
 
 class App:
 
-	def initMatrice(self):
-		self.MATRICE = []
-		for i in range(self.grille.taille_x):
-			self.MATRICE.append([[] for j in range(self.grille.taille_y)])
-		print("matrice :",self.MATRICE)
-
-	def addCubeToMatrix(self,pcoordsGrille,phauteur):
+	def addCubeToDico(self,pcoordsGrille,phauteur):
 		x,y = pcoordsGrille
-		if(x < 0)
-		self.MATRICE[pcoordsGrille[0]][pcoordsGrille[1]].append(phauteur)
-		print("new matrice :",self.MATRICE)
+		if((x,y) in self.DICO):
+			self.DICO[(x,y)].append(phauteur)
+		else:
+			self.DICO[(x,y)] = phauteur
+		print("new dico :",self.DICO)
 
 	def nouveauFichier(self):
 		# on efface tous les cubes
@@ -22,6 +18,7 @@ class App:
 			cube.effacer(self.canv)
 		# self.canv.delete("tag_cube") # plus simple a ecrire qu'appeler Cube.effacer() pour tous les cubes
 		self.CUBES = []
+		self.DICO = {}
 		# on desactive l'option de sauvegarde
 		# self.deroulFichier.entryconfigure(2,state="disabled")
 
@@ -32,7 +29,7 @@ class App:
 			self.deroulFichier.entryconfigure(1,state="disabled")
 		if len(self.CUBES) > 0:
 			cube = self.CUBES[-1]
-			self.MATRICE[cube.coords[0]][cube.coords[1]].pop()
+			self.DICO[(cube.coords[0],cube.coords[1])].pop()
 			print("new matrice :",self.MATRICE)
 			self.CUBES[-1].effacer(self.canv)
 			self.CUBES.pop()
@@ -44,7 +41,7 @@ class App:
 		coords = self.grille.closestPointUp(pcoordsGrille)
 		print("		placed cube at :",coords)
 		cube = Cube.Cube(self.canv,self.grille,coords,ptags="tag_cube")
-		self.addCubeToMatrix(coords,phauteur)
+		self.addCubeToDico(coords,phauteur)
 		# on a la hauteur en cliquant sur une face du haut
 		# il faut passer les coordonnees du cube mais avec la hauteur +1
 		self.CUBES.append(cube)
@@ -88,7 +85,7 @@ class App:
 		self.deroulFichier = tk.Menu(self.menuFichier, tearoff=False)
 		self.deroulFichier.add_command(label="Nouveau", command=self.nouveauFichier)
 		self.deroulFichier.add_command(label="Annuler", command=self.annulerDernierCube)
-		self.root.bind("<Control-z>",self.annulerDernierCube)
+		self.root.bind("<Control-z>", lambda event:self.annulerDernierCube(event))
 
 		# on desactive l'option pour annuler
 		self.deroulFichier.entryconfigure(1,state="disabled")
@@ -123,7 +120,7 @@ class App:
 		# cube1 = Cube.Cube(self.canv,self.grille,(1,1))
 
 		# Matrice
-		self.initMatrice()
+		self.DICO = {}
 
 		self.canv.pack()
 		# print("is ready :",isReadyToDraw)
