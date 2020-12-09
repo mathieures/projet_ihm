@@ -41,17 +41,18 @@ class App:
 			self.placerCube((int(parse[0]),int(parse[1])),5) 
 		fichier.close()
 
-	def annulerDernierCube(self,event):
+	def annulerDernierCube(self,event=None):
 		"""Annule le dernier placement de cube."""
+		# le parametre event est obligatoire pour etre bind
 		if len(self.CUBES) == 1:
 			# on desactive l'option pour annuler
-			self.deroulFichier.entryconfigure(2,state="disabled")
-			self.deroulFichier.entryconfigure(3,state="disabled")
+			self.deroulFichier.entryconfigure(1,state="disabled")
 		if len(self.CUBES) > 0:
 			cube = self.CUBES[-1]
+			coordsGrille = self.grille.canvasToGrille(cube.coords)
+			self.DICO[(coordsGrille[0],coordsGrille[1])].pop()
 			self.CUBES[-1].effacer(self.canv)
 			self.CUBES.pop()
-			del self.DICO[self.grille.canvasToGrille(cube.coords)]
 		else:
 			print("plus de cubes dans la liste")
 
