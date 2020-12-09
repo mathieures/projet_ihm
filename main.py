@@ -1,6 +1,7 @@
 import tkinter as tk
 import Grille
 import Cube
+from tkinter import filedialog,messagebox
 
 class App:
 
@@ -9,7 +10,7 @@ class App:
 		if((x,y) in self.DICO):
 			self.DICO[(x,y)].append(phauteur)
 		else:
-			self.DICO[(x,y)] = phauteur
+			self.DICO[(x,y)] = [phauteur]
 		print("new dico :",self.DICO)
 
 	def nouveauFichier(self):
@@ -22,11 +23,30 @@ class App:
 		# on desactive l'option de sauvegarde
 		# self.deroulFichier.entryconfigure(2,state="disabled")
 
+	def sauverFichier(self):
+		fichier = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=(("Text files", ".txt"),("All files", ".*"))) # On demande a l'utilisateur dans quel fichier il veut sauver le projet
+		try: # On ecrit dans le fichier les valeurs du dico
+			with open(fichier, "w", encoding = "utf-8") as f:
+				for pos_cube in self.DICO:
+					f.write(str(pos_cube[0]) + "," + str(pos_cube[1]) + "\n")
+		except: # Si il y a une erreur, le dire a l'utilisateur, (gerer les differentes erreurs apres !!!!)
+			messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du fichier.")
+
+	def ouvrirFichier(self):
+		self.nouveauFichier()
+		fichier = filedialog.askopenfile(mode="r",defaultextension=".txt", filetypes=(("Text files", ".txt"),("All files", ".*")))
+		positions = fichier.readlines()
+		for pos_cube in positions:
+			parse = pos_cube.rstrip().split(",")
+			self.placerCube((int(parse[0]),int(parse[1])),5) 
+		fichier.close()
+
 	def annulerDernierCube(self,event):
 		"""Annule le dernier placement de cube."""
 		if len(self.CUBES) == 1:
 			# on desactive l'option pour annuler
-			self.deroulFichier.entryconfigure(1,state="disabled")
+			self.deroulFichier.entryconfigure(2,state="disabled")
+			self.deroulFichier.entryconfigure(3,state="disabled")
 		if len(self.CUBES) > 0:
 			cube = self.CUBES[-1]
 			self.CUBES[-1].effacer(self.canv)
@@ -44,7 +64,8 @@ class App:
 		# on a la hauteur en cliquant sur une face du haut
 		# il faut passer les coordonnees du cube mais avec la hauteur +1
 		self.CUBES.append(cube)
-		self.deroulFichier.entryconfigure(1,state="active")
+		self.deroulFichier.entryconfigure(2,state="active")
+		self.deroulFichier.entryconfigure(3,state="active")
 		return cube # sert a rien mais au cas ou
 
 
@@ -83,11 +104,14 @@ class App:
 
 		self.deroulFichier = tk.Menu(self.menuFichier, tearoff=False)
 		self.deroulFichier.add_command(label="Nouveau", command=self.nouveauFichier)
+		self.deroulFichier.add_command(label="Charger", command=self.ouvrirFichier)
+		self.deroulFichier.add_command(label="Sauver", command=self.sauverFichier)
 		self.deroulFichier.add_command(label="Annuler", command=self.annulerDernierCube)
 		self.root.bind("<Control-z>", lambda event:self.annulerDernierCube(event))
 
-		# on desactive l'option pour annuler
-		self.deroulFichier.entryconfigure(1,state="disabled")
+		# on desactive l'option pour annuler et sauver
+		self.deroulFichier.entryconfigure(2,state="disabled")
+		self.deroulFichier.entryconfigure(3,state="disabled")
 
 		# self.deroulFichier.add_command(label="Ouvrir", command=openFile)
 		# self.deroulFichier.add_command(labstateel="Sauver", command=saveFile)
