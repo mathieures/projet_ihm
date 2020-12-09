@@ -29,10 +29,9 @@ class App:
 			self.deroulFichier.entryconfigure(1,state="disabled")
 		if len(self.CUBES) > 0:
 			cube = self.CUBES[-1]
-			self.DICO[(cube.coords[0],cube.coords[1])].pop()
-			print("new matrice :",self.MATRICE)
 			self.CUBES[-1].effacer(self.canv)
 			self.CUBES.pop()
+			del self.DICO[self.grille.canvasToGrille(cube.coords)]
 		else:
 			print("plus de cubes dans la liste")
 
@@ -119,7 +118,7 @@ class App:
 
 		# cube1 = Cube.Cube(self.canv,self.grille,(1,1))
 
-		# Matrice
+		# DICO
 		self.DICO = {}
 
 		self.canv.pack()
