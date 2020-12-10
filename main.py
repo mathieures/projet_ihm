@@ -58,6 +58,8 @@ class App:
 			cube = self.CUBES[-1]
 			coordsGrille = self.grille.canvasToGrille(cube.coords)
 			self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)].pop()
+			if(self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)] == []):
+				del self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)]
 			self.CUBES[-1].effacer(self.canv)
 			self.CUBES.pop()
 		else:
