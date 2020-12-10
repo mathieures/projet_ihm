@@ -66,14 +66,3 @@ class Cube:
 
 	def effacer(self,pcanvas):
 		pcanvas.delete(self.__haut,self.__gauche,self.__droite)
-
-	# def dessine(self,pcanvas,d,pcoords):
-	# 	AB = [x-d,y-d/2]
-	# 	EB = [x+d,y-d/2]
-	# 	AC = [x-d,y+d/2]
-	# 	EC = [x+d,y+d/2]
-	# 	xD = [x,y+d]
-	# 	xF = [x,y-d]
-	# 	haut = pcanvas.create_polygon(x,y,EB,xF,AB,fill='#afafaf')
-	# 	gauche = pcanvas.create_polygon(x,y,AB, AC, xD,fill='#414141')
-	# 	droite = pcanvas.create_polygon(x,y,EB,EC, xD,fill='#808080')

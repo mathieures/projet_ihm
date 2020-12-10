@@ -28,7 +28,10 @@ class App:
 		try: # On ecrit dans le fichier les valeurs du dico
 			with open(fichier, "w", encoding = "utf-8") as f:
 				for pos_cube in self.DICO:
-					f.write(str(pos_cube[0]) + "," + str(pos_cube[1]) + "\n")
+					f.write(str(pos_cube[0]) + "," + str(pos_cube[1]) + " ")
+					for h in self.DICO[pos_cube]:
+						f.write(str(h) + " ")
+					f.write("\n")
 		except: # Si il y a une erreur, le dire a l'utilisateur, (gerer les differentes erreurs apres !!!!)
 			messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du fichier.")
 			# attention : appele aussi quand l'utilisateur clique sur Annuler
@@ -39,8 +42,10 @@ class App:
 		if(fichier):
 			positions = fichier.readlines()
 			for pos_cube in positions:
-				parse = pos_cube.rstrip().split(",")
-				self.placerCube((int(parse[0]),int(parse[1])),5) 
+				parse = pos_cube.rstrip().split(" ")
+				pos = parse[0].split(",") # On prend le permier element de parse qui sera la position du cube, les autres elements sont les hauteurs
+				for i in range(1,len(parse)):
+					self.placerCube((int(pos[0]),int(pos[1])),int(parse[i])) 
 			fichier.close()
 
 	def annulerDernierCube(self,event=None):
