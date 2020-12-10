@@ -31,37 +31,48 @@ class App:
 					f.write(str(pos_cube[0]) + "," + str(pos_cube[1]) + "\n")
 		except: # Si il y a une erreur, le dire a l'utilisateur, (gerer les differentes erreurs apres !!!!)
 			messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du fichier.")
+			# attention : appele aussi quand l'utilisateur clique sur Annuler
 
 	def ouvrirFichier(self):
 		self.nouveauFichier()
 		fichier = filedialog.askopenfile(mode="r",defaultextension=".txt", filetypes=(("Text files", ".txt"),("All files", ".*")))
-		positions = fichier.readlines()
-		for pos_cube in positions:
-			parse = pos_cube.rstrip().split(",")
-			self.placerCube((int(parse[0]),int(parse[1])),5) 
-		fichier.close()
+		if(fichier):
+			positions = fichier.readlines()
+			for pos_cube in positions:
+				parse = pos_cube.rstrip().split(",")
+				self.placerCube((int(parse[0]),int(parse[1])),5) 
+			fichier.close()
 
 	def annulerDernierCube(self,event=None):
 		"""Annule le dernier placement de cube."""
 		# le parametre event est obligatoire pour etre bind
 		if len(self.CUBES) == 1:
 			# on desactive l'option pour annuler
-			self.deroulFichier.entryconfigure(1,state="disabled")
+			self.deroulFichier.entryconfigure(2,state="disabled")
 		if len(self.CUBES) > 0:
 			cube = self.CUBES[-1]
 			coordsGrille = self.grille.canvasToGrille(cube.coords)
-			self.DICO[(coordsGrille[0],coordsGrille[1])].pop()
+			self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)].pop()
 			self.CUBES[-1].effacer(self.canv)
 			self.CUBES.pop()
 		else:
 			print("plus de cubes dans la liste")
 
+
 	def placerCube(self,pcoordsGrille,phauteur):
 		"""Prend en parametre des coordonnes de self.grille (peut-etre a changer ?)"""
-		coords = self.grille.closestPointUp(pcoordsGrille)
-		print("		placed cube at :",coords)
-		cube = Cube.Cube(self.canv,self.grille,coords,ptags="tag_cube")
-		self.addCubeToDico(coords,phauteur)
+
+		coords = self.grille.closestPoint(pcoordsGrille)
+		print("coords 3D :",coords,phauteur,end=" ; ")
+		self.addCubeToDico(coords,phauteur) # coordonnees 3D
+
+		# on transforme les coordonnees 3D en coordonnees 2D
+		coords = (coords[0]-phauteur,coords[1]-phauteur)
+		print("coords 2D :",coords)
+
+
+		print("  placed cube at :",coords)
+		cube = Cube.Cube(self.canv,self.grille,coords,phauteur)
 		# on a la hauteur en cliquant sur une face du haut
 		# il faut passer les coordonnees du cube mais avec la hauteur +1
 		self.CUBES.append(cube)
@@ -69,14 +80,51 @@ class App:
 		self.deroulFichier.entryconfigure(3,state="active")
 		return cube # sert a rien mais au cas ou
 
+	def placerCubeHaut(self,pposition3D):
+		x,y,h = pposition3D
+		self.placerCube((x,y),h+1)
+
+	def placerCubeGauche(self,pposition3D):
+		x,y,h = pposition3D
+		self.placerCube((x,y+1),h)
+
+	def placerCubeDroite(self,pposition3D):
+		x,y,h = pposition3D
+		self.placerCube((x+1,y),h)
+
 
 	def onClick(self,event):
 		currentCoords = (event.x,event.y)
 		convertedCoords = self.grille.canvasToGrille((currentCoords))
 		print("click on :",currentCoords,"=>",convertedCoords)
-		hauteur = 5 # a changer avec la hauteur du cube sur lequel on a clique
-		if convertedCoords[0] < self.grille.taille_x and convertedCoords[1] < self.grille.taille_y and convertedCoords[0] > 0 and convertedCoords[1] > 0:
-			self.placerCube(convertedCoords,hauteur)
+
+		faceCliquee = self.canv.find_withtag("current") # id du polygone sur lequel on a clique
+		if(self.canv.type(faceCliquee) == "polygon"):
+
+			idCube = int(self.canv.gettags(faceCliquee)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
+			for cube in self.CUBES: # on teste chaque cube deja place
+				if cube.id == idCube: # si c'est celui sur lequel on a clique
+					x,y = self.grille.canvasToGrille(cube.coords) # coordonnees 2D "reelles" du cube dans la grille
+
+					position3D = (x+cube.h,y+cube.h,cube.h) # on obtient les coordonnees de hauteur 0 (case de base), et la hauteur
+
+					# on teste les id de faces pour savoir laquelle c'etait ; faceCliquee[0] car c'est un tuple
+					if faceCliquee[0] == cube.haut:
+						print("on place le cube sur la face haut")
+						self.placerCubeHaut(position3D)
+					elif faceCliquee[0] == cube.gauche:
+						print("on place le cube sur la face gauche")
+						self.placerCubeGauche(position3D)
+					elif faceCliquee[0] == cube.droite:
+						print("on place le cube sur la face droite")
+						self.placerCubeDroite(position3D)
+					break
+		
+		# sinon on a clique sur la grille
+		elif convertedCoords[0] < self.grille.taille_x and convertedCoords[1] < self.grille.taille_y and convertedCoords[0] > 0 and convertedCoords[1] > 0:
+			# il faut supprimer la limite de placement en vertical vers le haut, sinon on peut pas faire + de 1 cube en (0,0)
+			hauteur = 0
+			self.placerCube((convertedCoords[0]-0.5,convertedCoords[1]-0.5),hauteur) # on ajuste le point 0.5 case plus haut
 
 	def onMotion(self,event):
 		currentCoords = (event.x,event.y)
@@ -108,9 +156,9 @@ class App:
 		self.deroulFichier.add_command(label="Charger", command=self.ouvrirFichier)
 		self.deroulFichier.add_command(label="Sauver", command=self.sauverFichier)
 		self.deroulFichier.add_command(label="Annuler", command=self.annulerDernierCube)
-		self.root.bind("<Control-z>", lambda event:self.annulerDernierCube(event))
+		self.root.bind("<Control-z>", self.annulerDernierCube)
 
-		# on desactive l'option pour annuler et sauver
+		# on desactive les options annuler et sauver
 		self.deroulFichier.entryconfigure(2,state="disabled")
 		self.deroulFichier.entryconfigure(3,state="disabled")
 
