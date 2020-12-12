@@ -10,6 +10,61 @@ class App:
 
 	CUBES = [] # liste des cubes places
 
+	def dessinerGrilleSVG(self, pfichier):
+		x = self.grille.origine[0]
+		y = self.grille.origine[1]
+		d = self.grille.definition
+		for i in range(self.grille.taille_y+1):
+			pfichier.write("<line x1=\"" + str(x) + "\" " + "x2=\"" + str(x+d*self.grille.taille_y) + "\" " + "y1=\"" + str(y) + "\" " + "y2=\"" + str(y+(d*self.grille.taille_y/2)) + "\"")
+			x -= d
+			y += d/2
+			pfichier.write(" stroke=\"grey\"")
+			pfichier.write("/>\n")
+		x = self.grille.origine[0]
+		y = self.grille.origine[1]
+		for j in range(self.grille.taille_x+1):
+			pfichier.write("<line x1=\"" + str(x) + "\" " + "x2=\"" + str(x-d*self.grille.taille_y) + "\" " + "y1=\"" + str(y) + "\" " + "y2=\"" + str(y+(d*self.grille.taille_y/2)) + "\"")
+			x += d
+			y += d/2
+			pfichier.write(" stroke=\"grey\"")
+			pfichier.write("/>\n")
+
+	def dessinerCubeSVG(self,pcoords,pfichier,phauteur):
+		d = self.grille.definition
+		canv_coords = self.grille.grilleToCanvas(pcoords)
+		x = canv_coords[0]
+		y = canv_coords[1]-phauteur*d
+		pfichier.write("<polygon points=\"")
+		# Face Haut
+		pfichier.write(str(x) + " " + str(y) + "," + str(x+d)+ " " + str(y-d/2) + "," + str(x) + " " + str(y-d) + "," + str(x-d) + " " + str(y-d/2))
+		pfichier.write("\"/>\n")
+		pfichier.write(" fill=\"#afafaf\" />\n")
+		# Face Gauche
+		pfichier.write("<polygon points=\"")
+		pfichier.write(str(x) + " " + str(y) + "," + str(x-d)+ " " + str(y-d/2) + "," + str(x-d) + " " + str(y+d/2) + "," + str(x) + " " + str(y+d))
+		pfichier.write("\"/>\n")
+		pfichier.write(" fill=\"#808080\" />\n")
+		# Face Droite
+		pfichier.write("<polygon points=\"")
+		pfichier.write(str(x) + " " + str(y) + "," + str(x+d)+ " " + str(y-d/2) + "," + str(x+d) + " " + str(y+d/2) + "," + str(x) + " " + str(y+d))
+		pfichier.write("\"")
+		pfichier.write(" fill=\"#414141\" />\n")
+
+	def sauverSVG(self):
+		fichier = filedialog.asksaveasfilename(defaultextension=".svg", filetypes=(("SVG files", ".svg"),("All files", ".*")))
+		try: # On ecrit dans le fichier les valeurs du dico
+			with open(fichier, "w", encoding = "utf-8") as f:
+				f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n")
+				f.write("<svg viewBox=" + "\"0 0 " + str(self.canv.cget("width")) + " " + str(self.canv.cget("height")) + "\" " + "xmlns=\"http://www.w3.org/2000/svg\">\n")
+				self.dessinerGrilleSVG(f)
+				for pos_cube in self.DICO:
+					for h in self.DICO[pos_cube]:
+						self.dessinerCubeSVG(pos_cube,f,h)
+				f.write("</svg>")
+		except: # Si il y a une erreur, le dire a l'utilisateur, (gerer les differentes erreurs apres !!!!)
+			messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du fichier.")
+			# attention : appele aussi quand l'utilisateur clique sur Annuler
+
 	def addCubeToDico(self,pcoordsGrille,phauteur):
 		x,y = pcoordsGrille
 		if((x,y) in self.DICO):
@@ -77,7 +132,6 @@ class App:
 		Attention : recale la position au point le plus proche (closestPoint)
 		"""
 		coords = self.grille.closestPoint(pcoordsGrille)
-
 		self.addCubeToDico(coords,phauteur) # coordonnees 3D
 
 		# on transforme les coordonnees 3D en coordonnees 2D
@@ -109,7 +163,6 @@ class App:
 
 	def onClick(self,event):
 		"""En cas de clic sur le canvas"""
-
 		currentCoords = (event.x,event.y)
 		convertedCoords = self.grille.canvasToGrille(currentCoords)
 		# print("click on :",currentCoords,"=>",convertedCoords)
@@ -139,16 +192,6 @@ class App:
 			hauteur = 0
 			self.placerCube(self.grille.closestPointUp(convertedCoords),hauteur) # on ajuste le point 0.5 case plus haut
 
-	def onMotion(self,event):
-		"""
-		En cas mouvement dans le canvas.
-		"""
-		currentCoords = (event.x,event.y)
-		convertedCoords = self.grille.canvasToGrille(currentCoords)
-
-		return
-
-
 	def __init__(self):
 
 		# Root
@@ -168,6 +211,7 @@ class App:
 		self.deroulFichier = tk.Menu(self.menuFichier, tearoff=False)
 		self.deroulFichier.add_command(label="Nouveau", command=self.nouveauFichier)
 		self.deroulFichier.add_command(label="Charger", command=self.ouvrirFichier)
+		self.deroulFichier.add_command(label="Exporter", command=self.sauverSVG)
 		self.deroulFichier.add_command(label="Sauver", command=self.sauverFichier)
 		self.deroulFichier.add_command(label="Annuler", command=self.annulerDernierCube)
 		self.root.bind("<Control-z>", self.annulerDernierCube)
@@ -200,10 +244,8 @@ class App:
 
 		self.canv = tk.Canvas(self.root,width=500,height=500,bg="white")
 		self.canv.bind("<Button-1>",self.onClick)
-		self.canv.bind("<Motion>",self.onMotion)
 
 		self.grille = Grille.Grille(self.canv)
-
 		# cube1 = Cube.Cube(self.canv,self.grille,(1,1))
 
 		self.canv.pack()
