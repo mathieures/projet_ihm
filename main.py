@@ -11,9 +11,11 @@ class App:
 	CUBES = [] # liste des cubes places
 
 	def dessinerGrilleSVG(self, pfichier):
+		# Fonction qui ecrit dans un fichier SVG et qui pose des balises <line> pour dessiner la grille avec des lignes
 		x = self.grille.origine[0]
 		y = self.grille.origine[1]
 		d = self.grille.definition
+		# c'est en realite la meme methode que dans Grille.dessinegrille()
 		for i in range(self.grille.taille_y+1):
 			pfichier.write("<line x1=\"" + str(x) + "\" " + "x2=\"" + str(x+d*self.grille.taille_y) + "\" " + "y1=\"" + str(y) + "\" " + "y2=\"" + str(y+(d*self.grille.taille_y/2)) + "\"")
 			x -= d
@@ -30,10 +32,12 @@ class App:
 			pfichier.write("/>\n")
 
 	def dessinerCubeSVG(self,pcoords,pfichier,phauteur):
+		# Fonction qui ecrit dans un fichier SVG et qui pose des balises <polygon> pour dessiner les cubes
 		d = self.grille.definition
 		canv_coords = self.grille.grilleToCanvas(pcoords)
 		x = canv_coords[0]
 		y = canv_coords[1]-phauteur*d
+		# c'est en realite la meme methode que dans Cube.dessiner()
 		pfichier.write("<polygon points=\"")
 		# Face Haut
 		pfichier.write(str(x) + " " + str(y) + "," + str(x+d)+ " " + str(y-d/2) + "," + str(x) + " " + str(y-d) + "," + str(x-d) + " " + str(y-d/2))
@@ -51,14 +55,17 @@ class App:
 		pfichier.write(" fill=\"#414141\" />\n")
 
 	def sauverSVG(self):
+		# Fonction qui ouvre un fichier SVG et qui dessine le projet actuel
 		fichier = filedialog.asksaveasfilename(defaultextension=".svg", filetypes=(("SVG files", ".svg"),("All files", ".*")))
-		try: # On ecrit dans le fichier les valeurs du dico
+		try:
 			with open(fichier, "w", encoding = "utf-8") as f:
+				# Ecriture du header xml, puis d'une viewbox, qui est en realite comme notre canvas
 				f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n")
 				f.write("<svg viewBox=" + "\"0 0 " + str(self.canv.cget("width")) + " " + str(self.canv.cget("height")) + "\" " + "xmlns=\"http://www.w3.org/2000/svg\">\n")
 				self.dessinerGrilleSVG(f)
 				for pos_cube in self.DICO:
 					for h in self.DICO[pos_cube]:
+						# Pour chaque hauteur des differentes positions
 						self.dessinerCubeSVG(pos_cube,f,h)
 				f.write("</svg>")
 		except: # Si il y a une erreur, le dire a l'utilisateur, (gerer les differentes erreurs apres !!!!)
