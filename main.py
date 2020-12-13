@@ -41,12 +41,12 @@ class App:
 		pfichier.write("<polygon points=\"")
 		# Face Haut
 		pfichier.write(str(x) + " " + str(y) + "," + str(x+d)+ " " + str(y-d/2) + "," + str(x) + " " + str(y-d) + "," + str(x-d) + " " + str(y-d/2))
-		pfichier.write("\"/>\n")
+		pfichier.write("\"")
 		pfichier.write(" fill=\"#afafaf\" />\n")
 		# Face Gauche
 		pfichier.write("<polygon points=\"")
 		pfichier.write(str(x) + " " + str(y) + "," + str(x-d)+ " " + str(y-d/2) + "," + str(x-d) + " " + str(y+d/2) + "," + str(x) + " " + str(y+d))
-		pfichier.write("\"/>\n")
+		pfichier.write("\"")
 		pfichier.write(" fill=\"#808080\" />\n")
 		# Face Droite
 		pfichier.write("<polygon points=\"")
