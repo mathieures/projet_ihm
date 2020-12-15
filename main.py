@@ -10,6 +10,8 @@ class App:
 
 	CUBES = [] # liste des cubes places
 
+	# Exportation en .SVG
+
 	def dessinerGrilleSVG(self, pfichier):
 		# Fonction qui ecrit dans un fichier SVG et qui pose des balises <line> pour dessiner la grille avec des lignes
 		x = self.grille.origine[0]
@@ -72,6 +74,9 @@ class App:
 			messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du fichier.")
 			# attention : appele aussi quand l'utilisateur clique sur Annuler
 
+
+	# Conservation des donnees
+
 	def addCubeToDico(self,pcoordsGrille,phauteur):
 		x,y = pcoordsGrille
 		if((x,y) in self.DICO):
@@ -79,6 +84,7 @@ class App:
 		else:
 			self.DICO[(x,y)] = [phauteur]
 		print("new dico :",self.DICO)
+
 
 	def nouveauFichier(self):
 		# on efface tous les cubes
@@ -115,6 +121,9 @@ class App:
 					self.placerCube((int(pos[0]),int(pos[1])),int(parse[i]))
 			fichier.close()
 
+
+	# Manipulation des cubes
+
 	def annulerDernierCube(self,event=None):
 		"""Annule le dernier placement de cube."""
 		# le parametre event est obligatoire pour etre bind
@@ -132,24 +141,58 @@ class App:
 		else:
 			print("plus de cubes dans la liste")
 
-
 	def placerCube(self,pcoordsGrille,phauteur):
 		"""
 		Prend en parametre des coordonnes de self.grille (peut-etre a changer ?)
 		Attention : recale la position au point le plus proche (closestPoint)
 		"""
-		coords = self.grille.closestPoint(pcoordsGrille)
-		self.addCubeToDico(coords,phauteur) # coordonnees 3D
+		coords3D = self.grille.closestPoint(pcoordsGrille) # coordonnees de la case ou est place le cube
+		self.addCubeToDico(coords3D,phauteur) # coordonnees reelles du cube, sur une case de la grille mais en hauteur
 
-		# on transforme les coordonnees 3D en coordonnees 2D
-		coords = (coords[0]-phauteur,coords[1]-phauteur)
+		# on transforme les coordonnees 3D en coordonnees 2D "aplaties", transposees "comme on les voit", sans hauteur
+		coordsGrille = (coords3D[0]-phauteur,coords3D[1]-phauteur)
 
-		cube = Cube.Cube(self.canv,self.grille,coords,phauteur)
-		print("  placed cube",cube.id,"at :",(*pcoordsGrille,phauteur),"("+str(coords)+")") # coords 3D puis 2D
+		cube = Cube.Cube(self.canv,self.grille,coordsGrille,phauteur)
+		# print("  placed cube",cube.id,"at :",(*pcoordsGrille,phauteur),"--",str(coordsGrille)) # coords 3D puis 2D
+
+		indexCube = self.canv.find_all().index(cube.id) # index de la face du haut dans la liste de tous les elements du canvas
+		
+		tag = "cube_"+str(cube.id) # on a le tag "cube_idfaceduhaut", associe a toutes les faces du nouveau cube
+		for autreCube in self.CUBES:
+			if autreCube == cube:
+				continue
+			indexCube = self.canv.find_all().index(cube.id) # index de la face du haut dans la liste de tous les elements du canvas
+
+			autreIndex = self.canv.find_all().index(autreCube.id)
+			
+			# on utilise le meme procede que prededemment pour avoir les coordonnees du cube analyse
+			autreCoordsGrille = self.grille.closestPoint(self.grille.canvasToGrille(autreCube.coords))
+			autreCoords3D = (autreCoordsGrille[0]+autreCube.h,autreCoordsGrille[1]+autreCube.h)
+
+			if phauteur > autreCube.h and autreIndex > indexCube: # si le nouveau cube est plus haut mais que l'autre cube est dessine plus haut
+				self.canv.tag_raise(tag,(autreCube.id+2)) # +2 car on doit placer le cube au dessus de toutes les faces de l'autre cube
+			elif phauteur < autreCube.h and autreIndex < indexCube:
+				self.canv.tag_lower(tag,autreCube.id) # le nouveau est plus bas
+			# a chaque fois il faut regarder l'ordre de dessin : si la condition est fausse, c'est que le cube est deja bien place
+			elif phauteur == autreCube.h:
+				# on ne peut pas rassembler les deux conditions car ce ne sont pas exactement les memes
+				if coords3D[0] >= autreCoords3D[0]:
+					if coords3D[1] >= autreCoords3D[1] and autreIndex > indexCube:
+						self.canv.tag_raise(tag,(autreCube.id+2))
+					elif coords3D[1] < autreCoords3D[1] and autreIndex < indexCube:
+						self.canv.tag_lower(tag,autreCube.id)
+				elif coords3D[0] < autreCoords3D[0]:
+					if coords3D[1] > autreCoords3D[1] and autreIndex > indexCube:
+						self.canv.tag_raise(tag,(autreCube.id+2))
+					elif coords3D[1] <= autreCoords3D[1] and autreIndex < indexCube:
+						self.canv.tag_lower(tag,autreCube.id)
+
 
 		self.CUBES.append(cube)
+		# on active les options d'exportation, de sauvegarde et d'annulation
 		self.deroulFichier.entryconfigure(2,state="active")
 		self.deroulFichier.entryconfigure(3,state="active")
+		self.deroulFichier.entryconfigure(4,state="active")
 		return cube # ne sert a rien pour l'instant, mais au cas ou
 
 	def placerCubeHaut(self,pposition3D):
@@ -167,6 +210,8 @@ class App:
 		x,y,h = pposition3D
 		return self.placerCube((x+1,y),h)
 
+
+	# Gestion d'evenements
 
 	def onClick(self,event):
 		"""En cas de clic sur le canvas"""
@@ -199,6 +244,7 @@ class App:
 			hauteur = 0
 			self.placerCube(self.grille.closestPointUp(convertedCoords),hauteur) # on ajuste le point 0.5 case plus haut
 
+
 	def __init__(self):
 
 		# Root
@@ -226,14 +272,11 @@ class App:
 		# on desactive les options annuler et sauver
 		self.deroulFichier.entryconfigure(2,state="disabled")
 		self.deroulFichier.entryconfigure(3,state="disabled")
+		self.deroulFichier.entryconfigure(4,state="disabled")
 
-		# self.deroulFichier.add_command(label="Ouvrir", command=openFile)
-		# self.deroulFichier.add_command(labstateel="Sauver", command=saveFile)
 		# self.deroulFichier.add_command(label="Quitter", command=quitApp)
 		# self.root.protocol("WM_DELETE_WINDOW", quitApp) # pour gerer la fermeture avec la croix rouge et alt-f4
 
-		# # on desactive l'option de sauvegarde (il faudrait trouver par nom plutot)
-		# self.deroulFichier.entryconfigure(2,state="disabled")
 
 		self.menuFichier.config(menu=self.deroulFichier)
 		self.menuFichier.pack(side=tk.LEFT)
@@ -256,7 +299,6 @@ class App:
 		# cube1 = Cube.Cube(self.canv,self.grille,(1,1))
 
 		self.canv.pack()
-		# print("is ready :",isReadyToDraw)
 
 
 		# Fin
