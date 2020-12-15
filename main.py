@@ -43,18 +43,18 @@ class App:
 		pfichier.write("<polygon points=\"")
 		# Face Haut
 		pfichier.write(str(x) + " " + str(y) + "," + str(x+d)+ " " + str(y-d/2) + "," + str(x) + " " + str(y-d) + "," + str(x-d) + " " + str(y-d/2))
-		pfichier.write("\"/>\n")
-		pfichier.write(" fill=\"#afafaf\" />\n")
+		pfichier.write("\"")
+		pfichier.write(" stroke=\"black\" fill=\"#afafaf\" />\n")
 		# Face Gauche
 		pfichier.write("<polygon points=\"")
 		pfichier.write(str(x) + " " + str(y) + "," + str(x-d)+ " " + str(y-d/2) + "," + str(x-d) + " " + str(y+d/2) + "," + str(x) + " " + str(y+d))
-		pfichier.write("\"/>\n")
-		pfichier.write(" fill=\"#808080\" />\n")
+		pfichier.write("\"")
+		pfichier.write(" stroke=\"black\" fill=\"#808080\" />\n")
 		# Face Droite
 		pfichier.write("<polygon points=\"")
 		pfichier.write(str(x) + " " + str(y) + "," + str(x+d)+ " " + str(y-d/2) + "," + str(x+d) + " " + str(y+d/2) + "," + str(x) + " " + str(y+d))
 		pfichier.write("\"")
-		pfichier.write(" fill=\"#414141\" />\n")
+		pfichier.write(" stroke=\"black\" fill=\"#414141\" />\n")
 
 	def sauverSVG(self):
 		# Fonction qui ouvre un fichier SVG et qui dessine le projet actuel
