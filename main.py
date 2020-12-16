@@ -33,12 +33,12 @@ class App:
 			pfichier.write(" stroke=\"grey\"")
 			pfichier.write("/>\n")
 
-	def dessinerCubeSVG(self,pcoords,pfichier,phauteur):
+	def dessinerCubeSVG(self,pcoordsGrille,pfichier,phauteur):
 		# Fonction qui ecrit dans un fichier SVG et qui pose des balises <polygon> pour dessiner les cubes
 		d = self.grille.definition
-		canv_coords = self.grille.grilleToCanvas(pcoords)
+		canv_coords = self.grille.grilleToCanvas(pcoordsGrille)
 		x = canv_coords[0]
-		y = canv_coords[1]-phauteur*d
+		y = canv_coords[1]
 		# c'est en realite la meme methode que dans Cube.dessiner()
 		pfichier.write("<polygon points=\"")
 		# Face Haut
@@ -78,8 +78,8 @@ class App:
 								print("	cube id trouvé :",cube.id,"; coords :",cube.coords)
 								break
 						# cube est le cube correspondant a l'id i
-						coords3D = self.grille.closestPoint(self.grille.canvasToGrille(cube.coords))
-						self.dessinerCubeSVG(coords3D,f,cube.h)
+						coords2D = self.grille.canvasToGrille(cube.coords)
+						self.dessinerCubeSVG(coords2D,f,cube.h)
 				f.write("</svg>")
 		except: # Si il y a une erreur, le dire a l'utilisateur, (gerer les differentes erreurs apres !!!!)
 			messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du fichier.")
