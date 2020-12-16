@@ -65,10 +65,21 @@ class App:
 				f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n")
 				f.write("<svg viewBox=" + "\"0 0 " + str(self.canv.cget("width")) + " " + str(self.canv.cget("height")) + "\" " + "xmlns=\"http://www.w3.org/2000/svg\">\n")
 				self.dessinerGrilleSVG(f)
-				for pos_cube in self.DICO:
-					for h in self.DICO[pos_cube]:
-						# Pour chaque hauteur des differentes positions
-						self.dessinerCubeSVG(pos_cube,f,h)
+				# pas optimise, mais facultatif
+				liste = self.canv.find_all()[self.grille.taille_x+self.grille.taille_y+2:] # a partir du nb de lignes+1 jusqu'a la fin : les faces des cubes
+				# attention : les id commencent a 1
+				for i in range(len(liste)):
+					if i%3 == 0: # verifier si ça fonctionne toujours avec les pixmaps
+						# on a un id de cube, il nous faut l'objet pour avoir ses coordonnees
+						for c in self.CUBES:
+							print("c.id :",c.id,"liste[i] :",liste[i])
+							if c.id == liste[i]:
+								cube = c
+								print("	cube id trouvé :",cube.id,"; coords :",cube.coords)
+								break
+						# cube est le cube correspondant a l'id i
+						coords3D = self.grille.closestPoint(self.grille.canvasToGrille(cube.coords))
+						self.dessinerCubeSVG(coords3D,f,cube.h)
 				f.write("</svg>")
 		except: # Si il y a une erreur, le dire a l'utilisateur, (gerer les differentes erreurs apres !!!!)
 			messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du fichier.")
@@ -144,7 +155,7 @@ class App:
 
 	def placerCube(self,pcoordsGrille,phauteur):
 		"""
-		Prend en parametre des coordonnes de self.grille (peut-etre a changer ?)
+		Prend en parametre des coordonnees de self.grille (peut-etre a changer ?)
 		Attention : recale la position au point le plus proche (closestPoint)
 		"""
 		coords3D = self.grille.closestPoint(pcoordsGrille) # coordonnees de la case ou est place le cube
@@ -157,7 +168,7 @@ class App:
 		# print("  placed cube",cube.id,"at :",(*pcoordsGrille,phauteur),"--",str(coordsGrille)) # coords 3D puis 2D
 
 		indexCube = self.canv.find_all().index(cube.id) # index de la face du haut dans la liste de tous les elements du canvas
-		
+
 		tag = "cube_"+str(cube.id) # on a le tag "cube_idfaceduhaut", associe a toutes les faces du nouveau cube
 		for autreCube in self.CUBES:
 			if autreCube == cube:
@@ -165,7 +176,7 @@ class App:
 			indexCube = self.canv.find_all().index(cube.id) # index de la face du haut dans la liste de tous les elements du canvas
 
 			autreIndex = self.canv.find_all().index(autreCube.id)
-			
+
 			# on utilise le meme procede que prededemment pour avoir les coordonnees du cube analyse
 			autreCoordsGrille = self.grille.closestPoint(self.grille.canvasToGrille(autreCube.coords))
 			autreCoords3D = (autreCoordsGrille[0]+autreCube.h,autreCoordsGrille[1]+autreCube.h)
@@ -221,7 +232,7 @@ class App:
 		# print("click on :",currentCoords,"=>",convertedCoords)
 
 		faceCliquee = self.canv.find_withtag("current") # id du polygone sur lequel on a clique
-		
+
 		if(self.canv.type(faceCliquee) == "polygon"): # si on a bien clique sur un polygone (une face de cube)
 			idCube = int(self.canv.gettags(faceCliquee)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
 			for cube in self.CUBES: # on teste chaque cube deja place
@@ -238,9 +249,9 @@ class App:
 					elif faceCliquee[0] == cube.droite:
 						self.placerCubeDroite(position3D)
 					break
-	
-		# sinon ce n'est pas un polygone alors on a clique autre part : on regarde si c'est dans la grille
-		elif convertedCoords[0] < self.grille.taille_x and convertedCoords[1] < self.grille.taille_y and convertedCoords[0] > 0 and convertedCoords[1] > 0:
+
+		elif self.grille.is_in_grille(currentCoords):
+			# sinon ce n'est pas un polygone alors on a clique autre part : on regarde si c'est dans la grille
 			# il faut supprimer la limite de placement en vertical vers le haut, sinon on peut pas faire + de 1 cube en (0,0)
 			hauteur = 0
 			self.placerCube(self.grille.closestPointUp(convertedCoords),hauteur) # on ajuste le point 0.5 case plus haut

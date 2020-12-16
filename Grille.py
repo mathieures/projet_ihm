@@ -21,13 +21,13 @@ class Grille:
 		x = self.origine[0]
 		y = self.origine[1]
 		d = self.definition
-		for i in range(self.taille_y+1):
+		for i in range(self.taille_x+1):
 			pcanvas.create_line(x,y,x+d*self.taille_y,y+(d*self.taille_y/2))
 			x -= d
 			y += d/2
 		x = self.origine[0]
 		y = self.origine[1]
-		for j in range(self.taille_x+1):
+		for j in range(self.taille_y+1):
 			pcanvas.create_line(x,y,x-d*self.taille_x,y+(d*self.taille_x/2))
 			x += d
 			y += d/2
@@ -74,6 +74,13 @@ class Grille:
 
 	def closestPointUp(self,pcoordsGrille):
 		return self.closestPoint((pcoordsGrille[0]-0.5,pcoordsGrille[1]-0.5))
+
+	def is_in_grille(self,pcoords):
+		coordsGrille = self.canvasToGrille(pcoords)
+		if(coordsGrille[0] < self.taille_x and coordsGrille[1] < self.taille_y and
+				coordsGrille[0] > 0 and coordsGrille[1] > 0):
+			return True
+		return False
 
 	def __init__(self,pcanvas,pdefinition=20,ptaille_x=10,ptaille_y=10):
 		self.__definition = pdefinition # taille des cotes d'un carre
