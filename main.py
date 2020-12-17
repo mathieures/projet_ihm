@@ -227,19 +227,30 @@ class App:
 	# Gestion d'evenements
 
 	def onMotion(self, event):
-		coordsEvent = self.grille.closestPointUp((event.x, event.y))
+		d = self.grille.definition
+		coordsEvent = (event.x, event.y)
 		coordsGrille = self.grille.canvasToGrille(coordsEvent)
 		if(self.cubeTest == None):
 			if(self.grille.is_in_grille(coordsEvent)):
 				self.cubeTest = Cube.Cube(self.canv,self.grille,coordsGrille,0,pcouleur=("#f2e6e3","#f2e6e3","#f2e6e3")) # On place le cube si l'utilisateur entre dans la grille
 				self.precoords = coordsEvent
 		else:
-			coordsGrille = self.grille.grilleToCanvas(self.grille.closestPoint(self.grille.canvasToGrille(coordsEvent)))
-			# la difference entre la case d'avant et la nouvelle pour bouger le cube
-			delta_x = coordsGrille[0] - self.precoords[0]
-			delta_y = coordsGrille[1] - self.precoords[1]
-			self.precoords = coordsGrille
-			# On bouge les 3 faces du cube
+			new_coords = self.grille.grilleToCanvas(self.grille.closestPoint(self.grille.canvasToGrille(coordsEvent)))
+			new_coords_grille = self.grille.canvasToGrille(new_coords)
+			if(new_coords_grille in self.DICO):
+				h = max(self.DICO[new_coords_grille]) + 1
+				new_coords2 = (new_coords[0], new_coords[1]-d*h)
+				# la difference entre la case d'avant et la nouvelle pour bouger le cube
+				delta_x = new_coords2[0] - self.precoords[0]
+				delta_y = new_coords2[1] - self.precoords[1]
+
+				self.precoords = new_coords2
+			else:
+				delta_x = new_coords[0] - self.precoords[0]
+				delta_y = new_coords[1] - self.precoords[1]
+
+				self.precoords = new_coords
+
 			self.canv.move(self.cubeTest.id, delta_x,delta_y)
 			self.canv.move(self.cubeTest.id+1, delta_x,delta_y)
 			self.canv.move(self.cubeTest.id+2, delta_x,delta_y)
