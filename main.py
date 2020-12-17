@@ -10,6 +10,7 @@ class App:
 
 	CUBES = [] # liste des cubes places
 
+	precoords = () # Tuple Pour memoriser les coordonnees precedentes pour le previsualisation
 	# Exportation en .SVG
 
 	def dessinerGrilleSVG(self, pfichier):
@@ -225,6 +226,24 @@ class App:
 
 	# Gestion d'evenements
 
+	def onMotion(self, event):
+		coordsEvent = self.grille.closestPointUp((event.x, event.y))
+		coordsGrille = self.grille.canvasToGrille(coordsEvent)
+		if(self.cubeTest == None):
+			if(self.grille.is_in_grille(coordsEvent)):
+				self.cubeTest = Cube.Cube(self.canv,self.grille,coordsGrille,0,pcouleur=("#f2e6e3","#f2e6e3","#f2e6e3")) # On place le cube si l'utilisateur entre dans la grille
+				self.precoords = coordsEvent
+		else:
+			coordsGrille = self.grille.grilleToCanvas(self.grille.closestPoint(self.grille.canvasToGrille(coordsEvent)))
+			# la difference entre la case d'avant et la nouvelle pour bouger le cube
+			delta_x = coordsGrille[0] - self.precoords[0]
+			delta_y = coordsGrille[1] - self.precoords[1]
+			self.precoords = coordsGrille
+			# On bouge les 3 faces du cube
+			self.canv.move(self.cubeTest.id, delta_x,delta_y)
+			self.canv.move(self.cubeTest.id+1, delta_x,delta_y)
+			self.canv.move(self.cubeTest.id+2, delta_x,delta_y)
+
 	def onClick(self,event):
 		"""En cas de clic sur le canvas"""
 		currentCoords = (event.x,event.y)
@@ -232,7 +251,11 @@ class App:
 		# print("click on :",currentCoords,"=>",convertedCoords)
 
 		faceCliquee = self.canv.find_withtag("current") # id du polygone sur lequel on a clique
-
+		if self.grille.is_in_grille(currentCoords):
+			# sinon ce n'est pas un polygone alors on a clique autre part : on regarde si c'est dans la grille
+			# il faut supprimer la limite de placement en vertical vers le haut, sinon on peut pas faire + de 1 cube en (0,0)
+			hauteur = 0
+			self.placerCube(self.grille.closestPointUp(convertedCoords),hauteur) # on ajuste le point 0.5 case plus haut
 		if(self.canv.type(faceCliquee) == "polygon"): # si on a bien clique sur un polygone (une face de cube)
 			idCube = int(self.canv.gettags(faceCliquee)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
 			for cube in self.CUBES: # on teste chaque cube deja place
@@ -305,9 +328,11 @@ class App:
 		# Canvas
 
 		self.canv = tk.Canvas(self.root,width=500,height=500,bg="white")
+		self.canv.bind("<Motion>",self.onMotion)
 		self.canv.bind("<Button-1>",self.onClick)
 
 		self.grille = Grille.Grille(self.canv)
+		self.cubeTest = None
 		# cube1 = Cube.Cube(self.canv,self.grille,(1,1))
 
 		self.canv.pack()
