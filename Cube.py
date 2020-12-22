@@ -84,21 +84,15 @@ class Cube:
 		self.__couleur_haut = pcouleur[0]
 		self.__couleur_gauche = pcouleur[1]
 		self.__couleur_droite = pcouleur[2]
-	# a supprimer
-	# def changerCouleur(self,pcanvas,pcouleur,pface=None):
-	# """
-	# Prend en parametre la face qu'il faut recolorer.
-	# Si None, recolore tout, si invalide, ne fait rien.
-	# pcouleur est 1 ou 3 chaine(s) en hexadecimal commençant par #
-	# """
-	# if(pface != None):
-	# 	if pface == 0:
-	# 		pcanvas.itemconfig(self.__haut,fill=pcouleur)
-	# 	elif pface == 1:
-	# 		pcanvas.itemconfig(self.__gauche,fill=pcouleur)
-	# 	elif pface == 2:
-	# 		pcanvas.itemconfig(self.__droite,fill=pcouleur)
-	# else:
-	# 	pcanvas.itemconfig(self.__haut,fill=pcouleur[0])
-	# 	pcanvas.itemconfig(self.__gauche,fill=pcouleur[1])
-	# 	pcanvas.itemconfig(self.__droite,fill=pcouleur[2])
+
+	def disable(self,pcanvas):
+		# fonction qui "desactive" le cube, il sera insensible aux bindings (pour la previsualisation)
+		pcanvas.itemconfig(self.__haut,state='disabled')
+		pcanvas.itemconfig(self.__gauche,state='disabled')
+		pcanvas.itemconfig(self.__droite,state='disabled')
+
+	def priorite(self,pcanvas):
+		# fonction pour rendre le cube visible au premier plan
+		pcanvas.tag_raise(self.__haut)
+		pcanvas.tag_raise(self.__gauche)
+		pcanvas.tag_raise(self.__droite)
