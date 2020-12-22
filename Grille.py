@@ -17,6 +17,20 @@ class Grille:
 	def origine(self):
 		return self.__origine
 
+	def __init__(self,pcanvas,pdefinition=20,ptaille_x=10,ptaille_y=10,porigine=None):
+		self.__definition = pdefinition # taille des cotes d'un carre
+		self.__taille_x = ptaille_x # nombre de cases suivant l'axe x (qui va en bas à droite)
+		self.__taille_y = ptaille_y # nombre de cases suivant l'axe y (qui va en bas à gauche)
+
+		if porigine == None:
+			self.__origine = (int(pcanvas.cget("width")) / 2,int(pcanvas.cget("height")) / 4) # coordonnees de l'origine (dans le referentiel tkinter)
+		else:
+			self.__origine = porigine
+			
+		print("origine :",self.origine,"; definition :",self.definition)
+		# dessin de la grille
+		self.dessineGrille(pcanvas)
+
 	def dessineGrille(self,pcanvas):
 		x = self.origine[0]
 		y = self.origine[1]
@@ -81,13 +95,3 @@ class Grille:
 				coordsGrille[0] > 0 and coordsGrille[1] > 0):
 			return True
 		return False
-
-	def __init__(self,pcanvas,pdefinition=20,ptaille_x=10,ptaille_y=10):
-		self.__definition = pdefinition # taille des cotes d'un carre
-		self.__taille_x = ptaille_x # nombre de cases suivant l'axe x (qui va en bas à droite)
-		self.__taille_y = ptaille_y # nombre de cases suivant l'axe y (qui va en bas à gauche)
-
-		self.__origine = (int(pcanvas.cget("width")) / 2,int(pcanvas.cget("height")) / 4) # coordonnees de l'origine (dans le referentiel tkinter)
-		print("origine :",self.origine,"; definition :",self.definition)
-		# dessin de la grille
-		self.dessineGrille(pcanvas)

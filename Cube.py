@@ -3,9 +3,9 @@ import Grille
 
 class Cube:
 
-	couleur_haut = "#afafaf"
-	couleur_gauche = "#808080"
-	couleur_droite = "#414141"
+	__couleur_haut = "#afafaf"
+	__couleur_gauche = "#808080"
+	__couleur_droite = "#414141"
 
 	@property
 	def haut(self):
@@ -27,8 +27,12 @@ class Cube:
 	def h(self):
 		return self.__h
 
+	@property
+	def couleur(self):
+		return (self.__couleur_haut, self.__couleur_gauche, self.__couleur_droite)
+
 	#constructeur
-	def __init__(self,pcanvas,pgrille,pcoordsGrille,phauteur=0,pcouleur=(couleur_haut,couleur_gauche,couleur_droite)):
+	def __init__(self,pcanvas,pgrille,pcoordsGrille,phauteur=0,pcouleur=(__couleur_haut,__couleur_gauche,__couleur_droite)):
 		# pcoords est un point de la grille, (hauteur 0 !!)
 
 		self.coords = pgrille.grilleToCanvas(pcoordsGrille)
@@ -58,12 +62,43 @@ class Cube:
 		F = (x,y-d) # haut
 		
 		# on ajoute un tag aux faces, pour que quand on clique sur une face, on puisse avoir le cube
-		self.__haut = pcanvas.create_polygon(self.coords,B,F,A,fill=pcouleur[0],outline="black")
+		self.__haut = pcanvas.create_polygon(self.coords,B,F,A,outline="black")
 		tag = "cube_"+str(self.__haut)
 		pcanvas.itemconfig(self.__haut,tags=tag)
 		
-		self.__gauche = pcanvas.create_polygon(self.coords,A,C,E,fill=pcouleur[1],outline="black",tags=tag)
-		self.__droite = pcanvas.create_polygon(self.coords,B,D,E,fill=pcouleur[2],outline="black",tags=tag)
+		self.__gauche = pcanvas.create_polygon(self.coords,A,C,E,outline="black",tags=tag)
+		self.__droite = pcanvas.create_polygon(self.coords,B,D,E,outline="black",tags=tag)
+
+		self.changerCouleur(pcanvas,pcouleur)
 
 	def effacer(self,pcanvas):
 		pcanvas.delete(self.__haut,self.__gauche,self.__droite)
+
+	def changerCouleur(self,pcanvas,pcouleur):
+		"""
+		pcouleur est un tuple/liste de 3 chaines en hexadecimal commençant par #
+		"""
+		pcanvas.itemconfig(self.__haut,fill=pcouleur[0])
+		pcanvas.itemconfig(self.__gauche,fill=pcouleur[1])
+		pcanvas.itemconfig(self.__droite,fill=pcouleur[2])
+		self.__couleur_haut = pcouleur[0]
+		self.__couleur_gauche = pcouleur[1]
+		self.__couleur_droite = pcouleur[2]
+	# a supprimer
+	# def changerCouleur(self,pcanvas,pcouleur,pface=None):
+	# """
+	# Prend en parametre la face qu'il faut recolorer.
+	# Si None, recolore tout, si invalide, ne fait rien.
+	# pcouleur est 1 ou 3 chaine(s) en hexadecimal commençant par #
+	# """
+	# if(pface != None):
+	# 	if pface == 0:
+	# 		pcanvas.itemconfig(self.__haut,fill=pcouleur)
+	# 	elif pface == 1:
+	# 		pcanvas.itemconfig(self.__gauche,fill=pcouleur)
+	# 	elif pface == 2:
+	# 		pcanvas.itemconfig(self.__droite,fill=pcouleur)
+	# else:
+	# 	pcanvas.itemconfig(self.__haut,fill=pcouleur[0])
+	# 	pcanvas.itemconfig(self.__gauche,fill=pcouleur[1])
+	# 	pcanvas.itemconfig(self.__droite,fill=pcouleur[2])

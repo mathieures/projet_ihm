@@ -9,8 +9,11 @@ class App:
 	DICO = {}
 
 	CUBES = [] # liste des cubes places
+	__couleur_cube = ["#afafaf","#808080","#414141"] # couleur des cubes par defaut
+	COULEUR_MAX = 16777215 # la couleur #ffffff en decimal
 
 	precoords = () # Tuple Pour memoriser les coordonnees precedentes pour le previsualisation
+	
 	# Exportation en .SVG
 
 	def dessinerGrilleSVG(self, pfichier):
@@ -34,7 +37,7 @@ class App:
 			pfichier.write(" stroke=\"grey\"")
 			pfichier.write("/>\n")
 
-	def dessinerCubeSVG(self,pcoordsGrille,pfichier,phauteur):
+	def dessinerCubeSVG(self,pcoordsGrille,pfichier,phauteur,pcouleur=__couleur_cube):
 		# Fonction qui ecrit dans un fichier SVG et qui pose des balises <polygon> pour dessiner les cubes
 		d = self.grille.definition
 		canv_coords = self.grille.grilleToCanvas(pcoordsGrille)
@@ -45,17 +48,17 @@ class App:
 		# Face Haut
 		pfichier.write(str(x) + " " + str(y) + "," + str(x+d)+ " " + str(y-d/2) + "," + str(x) + " " + str(y-d) + "," + str(x-d) + " " + str(y-d/2))
 		pfichier.write("\"")
-		pfichier.write(" stroke=\"black\" fill=\"#afafaf\" />\n")
+		pfichier.write(f" stroke=\"black\" fill=\"{pcouleur[0]}\" />\n")
 		# Face Gauche
 		pfichier.write("<polygon points=\"")
 		pfichier.write(str(x) + " " + str(y) + "," + str(x-d)+ " " + str(y-d/2) + "," + str(x-d) + " " + str(y+d/2) + "," + str(x) + " " + str(y+d))
 		pfichier.write("\"")
-		pfichier.write(" stroke=\"black\" fill=\"#808080\" />\n")
+		pfichier.write(f" stroke=\"black\" fill=\"{pcouleur[1]}\" />\n")
 		# Face Droite
 		pfichier.write("<polygon points=\"")
 		pfichier.write(str(x) + " " + str(y) + "," + str(x+d)+ " " + str(y-d/2) + "," + str(x+d) + " " + str(y+d/2) + "," + str(x) + " " + str(y+d))
 		pfichier.write("\"")
-		pfichier.write(" stroke=\"black\" fill=\"#414141\" />\n")
+		pfichier.write(f" stroke=\"black\" fill=\"{pcouleur[2]}\" />\n")
 
 	def sauverSVG(self):
 		# Fonction qui ouvre un fichier SVG et qui dessine le projet actuel
@@ -80,7 +83,7 @@ class App:
 								break
 						# cube est le cube correspondant a l'id i
 						coords2D = self.grille.canvasToGrille(cube.coords)
-						self.dessinerCubeSVG(coords2D,f,cube.h)
+						self.dessinerCubeSVG(coords2D,f,cube.h,cube.couleur)
 				f.write("</svg>")
 		except: # Si il y a une erreur, le dire a l'utilisateur, (gerer les differentes erreurs apres !!!!)
 			messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du fichier.")
@@ -111,13 +114,15 @@ class App:
 
 	def sauverFichier(self):
 		fichier = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=(("Text files", ".txt"),("All files", ".*"))) # On demande a l'utilisateur dans quel fichier il veut sauver le projet
-		try: # On ecrit dans le fichier les valeurs du dico
+		try: # On ecrit dans le fichier les coordonnees et couleurs des cubes
 			with open(fichier, "w", encoding = "utf-8") as f:
-				for pos_cube in self.DICO:
-					f.write(str(pos_cube[0]) + "," + str(pos_cube[1]) + " ")
-					for h in self.DICO[pos_cube]:
-						f.write(str(h) + " ")
-					f.write("\n")
+				for cube in self.CUBES:
+					coords_grille = self.grille.closestPoint(self.grille.canvasToGrille(cube.coords))
+					coords3D = (coords_grille[0]+cube.h,coords_grille[1]+cube.h)
+					couleur_faces = cube.couleur
+					f.write(f"{coords3D[0]},{coords3D[1]},{cube.h},{couleur_faces[0]},{couleur_faces[1]},{couleur_faces[2]}\n")
+					# f.write()
+					# f.write(str(pos_cube[0]) + "," + str(pos_cube[1]) + " ")
 		except: # Si il y a une erreur, le dire a l'utilisateur, (gerer les differentes erreurs apres !!!!)
 			messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du fichier.")
 			# attention : appele aussi quand l'utilisateur clique sur Annuler
@@ -126,12 +131,9 @@ class App:
 		self.nouveauFichier()
 		fichier = filedialog.askopenfile(mode="r",defaultextension=".txt", filetypes=(("Text files", ".txt"),("All files", ".*")))
 		if(fichier):
-			positions = fichier.readlines()
-			for pos_cube in positions:
-				parse = pos_cube.rstrip().split(" ")
-				pos = parse[0].split(",") # On prend le permier element de parse qui sera la position du cube, les autres elements sont les hauteurs
-				for i in range(1,len(parse)):
-					self.placerCube((int(pos[0]),int(pos[1])),int(parse[i]))
+			for ligne in fichier.readlines():
+				parse = ligne.rstrip().split(',')
+				self.placerCube((int(parse[0]),int(parse[1])),int(parse[2]),parse[3:6])
 			fichier.close()
 
 
@@ -154,9 +156,9 @@ class App:
 		else:
 			print("plus de cubes dans la liste")
 
-	def placerCube(self,pcoordsGrille,phauteur):
+	def placerCube(self,pcoordsGrille,phauteur,pcouleur=__couleur_cube):
 		"""
-		Prend en parametre des coordonnees de self.grille (peut-etre a changer ?)
+		Prend en parametre des coordonnees de self.grille, comme (2.125, 4.08) (peut-etre a changer ?)
 		Attention : recale la position au point le plus proche (closestPoint)
 		"""
 		coords3D = self.grille.closestPoint(pcoordsGrille) # coordonnees de la case ou est place le cube
@@ -165,7 +167,7 @@ class App:
 		# on transforme les coordonnees 3D en coordonnees 2D "aplaties", transposees "comme on les voit", sans hauteur
 		coordsGrille = (coords3D[0]-phauteur,coords3D[1]-phauteur)
 
-		cube = Cube.Cube(self.canv,self.grille,coordsGrille,phauteur)
+		cube = Cube.Cube(self.canv,self.grille,coordsGrille,phauteur,pcouleur)
 		# print("  placed cube",cube.id,"at :",(*pcoordsGrille,phauteur),"--",str(coordsGrille)) # coords 3D puis 2D
 
 		indexCube = self.canv.find_all().index(cube.id) # index de la face du haut dans la liste de tous les elements du canvas
@@ -223,37 +225,161 @@ class App:
 		x,y,h = pposition3D
 		return self.placerCube((x+1,y),h)
 
+	# Interface de choix de la couleur
+
+	def calculerTriplet(self,nombre):
+		B = nombre % 256
+		V = (nombre // 256) % 256
+		R = ((nombre // 256) // 256) % 256
+		return (R,V,B)
+
+
+	def dec2hex(self,triplet):
+		"""
+		Convertit le tuple donne en parametre en chaine de caractere
+		repesentant la couleur en hexadecimal
+		"""
+		res = "#"
+		for i in range(3):
+			hexa = hex(triplet[i])[2:]
+			if(len(hexa) < 2): # les nb < 16 font 1 seul caractere, on en veut 2
+				hexa = "0"+hexa
+			res += hexa
+		return res
+
+	def ouvrirFenetreCouleur(self):
+		"""Ouvre la fenetre de selection des couleurs pour un cube"""
+		self.__fenetre_couleur = tk.Toplevel(self.root)
+		
+		# Visualisation du cube a gauche
+		self.__canvas_couleur = tk.Canvas(self.__fenetre_couleur,width=160,height=100) # a equilibrer
+		# self.__canvas_couleur = tk.Canvas(frame_couleur_RVB,width=50,height=50)
+		self.__canvas_couleur.pack(side=tk.LEFT)
+		grille_couleur = Grille.Grille(self.__canvas_couleur,25,1,1,porigine=(80,50)) # d = 10, taille_x,taille_y = 1,1
+		self.__cube_couleur = Cube.Cube(self.__canvas_couleur,grille_couleur,(0,0),self.__couleur_cube)
+
+		frame_couleur_right = tk.Frame(self.__fenetre_couleur,bg='blue') # ne pas oublier d'enlever le bg
+		frame_couleur_right.pack(side=tk.TOP)
+		frame_couleur_RVB = tk.Frame(frame_couleur_right,bg='red') # ne pas oublier d'enlever le bg
+		frame_couleur_RVB.pack(side=tk.TOP,anchor="nw")
+
+		frame_couleur_haut = tk.Frame(frame_couleur_right,bg='pink') # ne pas oublier d'enlever le bg
+		frame_couleur_haut.pack(side=tk.TOP)
+		frame_couleur_gauche = tk.Frame(frame_couleur_right,bg='green') # ne pas oublier d'enlever le bg
+		frame_couleur_gauche.pack(side=tk.TOP)
+		frame_couleur_droite = tk.Frame(frame_couleur_right,bg='red') # ne pas oublier d'enlever le bg
+		frame_couleur_droite.pack(side=tk.TOP)
+
+		bottom_frame_couleur = tk.Frame(self.__fenetre_couleur,bg='green')
+		bottom_frame_couleur.pack(side=tk.BOTTOM)
+		
+		# Affichage des codes couleur a droite synchronisees avec les sliders
+		# Codes en hexadecimal
+		self.__stringvar_couleur_haut = tk.StringVar(value=self.__couleur_cube[0])
+		self.__stringvar_couleur_gauche = tk.StringVar(value=self.__couleur_cube[1])
+		self.__stringvar_couleur_droite = tk.StringVar(value=self.__couleur_cube[2])
+
+		# Valeurs decimales
+		self.__code_couleur_haut_RVB = [tk.IntVar(value=int(self.__stringvar_couleur_haut.get()[1:3],16)), # est-ce qu'avoir des intvar sert vraiment ?
+										tk.IntVar(value=int(self.__stringvar_couleur_haut.get()[3:5],16)),
+										tk.IntVar(value=int(self.__stringvar_couleur_haut.get()[5:7],16))]
+		self.__code_couleur_gauche_RVB = [tk.IntVar(value=int(self.__stringvar_couleur_gauche.get()[1:3],16)),
+										tk.IntVar(value=int(self.__stringvar_couleur_gauche.get()[3:5],16)),
+										tk.IntVar(value=int(self.__stringvar_couleur_gauche.get()[5:7],16))]
+		self.__code_couleur_droite_RVB = [tk.IntVar(value=int(self.__stringvar_couleur_droite.get()[1:3],16)),
+										tk.IntVar(value=int(self.__stringvar_couleur_droite.get()[3:5],16)),
+										tk.IntVar(value=int(self.__stringvar_couleur_droite.get()[5:7],16))]
+
+
+
+		label_couleur_texte = tk.Label(frame_couleur_RVB,text="  R :     V :     B :     code hex :")
+		label_couleur_texte.pack()
+		couleur_haut_entry_R = tk.Entry(frame_couleur_haut,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_haut_RVB[0]) # il faudra empecher les txt + longs que 3
+		couleur_haut_entry_V = tk.Entry(frame_couleur_haut,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_haut_RVB[1]) # il faudra empecher les txt + longs que 3
+		couleur_haut_entry_B = tk.Entry(frame_couleur_haut,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_haut_RVB[2]) # il faudra empecher les txt + longs que 3
+		couleur_haut_entry_R.pack(side=tk.LEFT)
+		couleur_haut_entry_V.pack(side=tk.LEFT)
+		couleur_haut_entry_B.pack(side=tk.LEFT)
+		couleur_gauche_entry_R = tk.Entry(frame_couleur_gauche,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_gauche_RVB[0]) # il faudra empecher les txt + longs que 3
+		couleur_gauche_entry_V = tk.Entry(frame_couleur_gauche,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_gauche_RVB[1]) # il faudra empecher les txt + longs que 3
+		couleur_gauche_entry_B = tk.Entry(frame_couleur_gauche,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_gauche_RVB[2]) # il faudra empecher les txt + longs que 3
+		couleur_gauche_entry_R.pack(side=tk.LEFT)
+		couleur_gauche_entry_V.pack(side=tk.LEFT)
+		couleur_gauche_entry_B.pack(side=tk.LEFT)
+		couleur_droite_entry_R = tk.Entry(frame_couleur_droite,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_droite_RVB[0]) # il faudra empecher les txt + longs que 3
+		couleur_droite_entry_V = tk.Entry(frame_couleur_droite,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_droite_RVB[1]) # il faudra empecher les txt + longs que 3
+		couleur_droite_entry_B = tk.Entry(frame_couleur_droite,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_droite_RVB[2]) # il faudra empecher les txt + longs que 3
+		couleur_droite_entry_R.pack(side=tk.LEFT)
+		couleur_droite_entry_V.pack(side=tk.LEFT)
+		couleur_droite_entry_B.pack(side=tk.LEFT)
+
+
+		couleur_haut_hexa_entry = tk.Entry(frame_couleur_haut,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_haut) # il faudra rajouter la possiblite d'ecrire la couleur
+		couleur_gauche_hexa_entry = tk.Entry(frame_couleur_gauche,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_gauche) # il faudra rajouter la possiblite d'ecrire la couleur
+		couleur_droite_hexa_entry = tk.Entry(frame_couleur_droite,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_droite) # il faudra rajouter la possiblite d'ecrire la couleur
+		couleur_haut_hexa_entry.pack(side=tk.LEFT)
+		couleur_gauche_hexa_entry.pack(side=tk.LEFT)
+		couleur_droite_hexa_entry.pack(side=tk.LEFT)
+
+		# Sliders en bas
+		# il faut positionner la handle des sliders en fonction des valeurs qu'on a deja
+		scale_couleur_haut = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.COULEUR_MAX, 
+										showvalue=0, resolution=1,command=self.updateCouleurHaut,length=200) # length a equilibrer
+		scale_couleur_gauche = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.COULEUR_MAX, 
+										showvalue=0, resolution=1,command=self.updateCouleurGauche,length=200)
+		scale_couleur_droite = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.COULEUR_MAX, 
+										showvalue=0, resolution=1,command=self.updateCouleurDroite,length=200)
+		scale_couleur_haut.pack()
+		scale_couleur_gauche.pack()
+		scale_couleur_droite.pack()
+
+		# Mode avance
+		self.__mode_auto = tk.BooleanVar(value=True) # definit le comportement des sliders : mis a jour automatiquement (True) ou separement (False)
+		check_mode_inde = tk.Checkbutton(bottom_frame_couleur,text="Modifier ensemble",variable=self.__mode_auto)
+		check_mode_inde.pack(side=tk.LEFT)
+
+		# Confirmer
+		couleur_bouton_ok = tk.Button(bottom_frame_couleur,text="Ok",command=self.confirmerCouleur)
+		couleur_bouton_ok.pack(side=tk.RIGHT,padx=10)
+
+	def confirmerCouleur(self):
+		self.__couleur_cube = [self.__stringvar_couleur_haut.get(),	self.__stringvar_couleur_gauche.get(), self.__stringvar_couleur_droite.get()]
+		self.__fenetre_couleur.destroy()
 
 	# Gestion d'evenements
 
 	def onMotion(self, event):
-		d = self.grille.definition
-		coordsEvent = (event.x, event.y)
-		coordsGrille = self.grille.canvasToGrille(coordsEvent)
-		if(self.cubeTest == None):
-			if(self.grille.is_in_grille(coordsEvent)):
-				self.cubeTest = Cube.Cube(self.canv,self.grille,coordsGrille,0,pcouleur=("#f2e6e3","#f2e6e3","#f2e6e3")) # On place le cube si l'utilisateur entre dans la grille
-				self.precoords = coordsEvent
-		else:
-			new_coords = self.grille.grilleToCanvas(self.grille.closestPoint(self.grille.canvasToGrille(coordsEvent)))
-			new_coords_grille = self.grille.canvasToGrille(new_coords)
-			if(new_coords_grille in self.DICO):
-				h = max(self.DICO[new_coords_grille]) + 1
-				new_coords2 = (new_coords[0], new_coords[1]-d*h)
-				# la difference entre la case d'avant et la nouvelle pour bouger le cube
-				delta_x = new_coords2[0] - self.precoords[0]
-				delta_y = new_coords2[1] - self.precoords[1]
-
-				self.precoords = new_coords2
+		if(self.visualiser.get()):
+			d = self.grille.definition
+			coordsEvent = (event.x, event.y)
+			coordsGrille = self.grille.canvasToGrille(coordsEvent)
+			if(self.cubeTest == None):
+				if(self.grille.is_in_grille(coordsEvent)):
+					self.cubeTest = Cube.Cube(self.canv,self.grille,coordsGrille,0,pcouleur=("#f2e6e3","#f2e6e3","#f2e6e3")) # On cree le cube si l'utilisateur entre dans la grille
+					self.precoords = coordsEvent
 			else:
-				delta_x = new_coords[0] - self.precoords[0]
-				delta_y = new_coords[1] - self.precoords[1]
+				new_coords = self.grille.grilleToCanvas(self.grille.closestPoint(self.grille.canvasToGrille(coordsEvent)))
+				new_coords_grille = self.grille.canvasToGrille(new_coords)
+				if(new_coords_grille in self.DICO):
+					h = max(self.DICO[new_coords_grille]) + 1
+					new_coords2 = (new_coords[0], new_coords[1]-d*h)
+					# la difference entre la case d'avant et la nouvelle pour bouger le cube
+					delta_x = new_coords2[0] - self.precoords[0]
+					delta_y = new_coords2[1] - self.precoords[1]
 
-				self.precoords = new_coords
+					self.precoords = new_coords2
+				else:
+					delta_x = new_coords[0] - self.precoords[0]
+					delta_y = new_coords[1] - self.precoords[1]
 
-			self.canv.move(self.cubeTest.id, delta_x,delta_y)
-			self.canv.move(self.cubeTest.id+1, delta_x,delta_y)
-			self.canv.move(self.cubeTest.id+2, delta_x,delta_y)
+					self.precoords = new_coords
+
+				self.canv.move("cube_"+str(self.cubeTest.id), delta_x,delta_y)
+		
+		elif(self.cubeTest):
+			# si le booleen est a False et qu'il y a encore le cube, on le detruit
+			self.cubeTest.effacer(self.canv)
+			self.cubeTest = None
 
 	def onClick(self,event):
 		"""En cas de clic sur le canvas"""
@@ -262,11 +388,6 @@ class App:
 		# print("click on :",currentCoords,"=>",convertedCoords)
 
 		faceCliquee = self.canv.find_withtag("current") # id du polygone sur lequel on a clique
-		if self.grille.is_in_grille(currentCoords):
-			# sinon ce n'est pas un polygone alors on a clique autre part : on regarde si c'est dans la grille
-			# il faut supprimer la limite de placement en vertical vers le haut, sinon on peut pas faire + de 1 cube en (0,0)
-			hauteur = 0
-			self.placerCube(self.grille.closestPointUp(convertedCoords),hauteur) # on ajuste le point 0.5 case plus haut
 		if(self.canv.type(faceCliquee) == "polygon"): # si on a bien clique sur un polygone (une face de cube)
 			idCube = int(self.canv.gettags(faceCliquee)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
 			for cube in self.CUBES: # on teste chaque cube deja place
@@ -291,6 +412,104 @@ class App:
 			self.placerCube(self.grille.closestPointUp(convertedCoords),hauteur) # on ajuste le point 0.5 case plus haut
 
 
+	def updateCouleurHaut(self,valeur):
+		"""
+		On modifie les variables self.__couleur_* pour qu'elles correspondent aux valeurs
+		des sliders de selection de couleur. On met aussi a jour la couleur des faces du cube.
+		"""
+		val = int(valeur)
+		code = self.dec2hex(self.calculerTriplet(val))
+		print("code hexa :",code)
+		self.__stringvar_couleur_haut.set(code)
+		# les couleurs automatiques ne sont pas parfaites, mais dans certains cas ça marche plutot bien
+		# il faut aussi bouger les sliders en fonction des valeurs
+		
+		nouvelle_couleur = [code,None,None]
+
+		if(self.__mode_auto.get()):
+			nouvelle_couleur[1] = self.dec2hex(self.calculerTriplet(int(0.73142*val)))
+			nouvelle_couleur[2] = self.dec2hex(self.calculerTriplet(int(0.37142*val)))
+			self.__stringvar_couleur_gauche.set(nouvelle_couleur[1]) # valeurs calculees (precision arbitraire)
+			self.__stringvar_couleur_droite.set(nouvelle_couleur[2])
+			# on met a jour les Entry des autres faces
+			for i in range(3):
+				# on modifie chaque entry pour la face, en fonction du code en hexadecimal
+				triplet = [ int(nouvelle_couleur[1][j:j+2],16) for j in range(1,7,2) ]
+				self.__code_couleur_gauche_RVB[i].set(triplet[i])
+			for i in range(3):
+				triplet = [ int(nouvelle_couleur[2][j:j+2],16) for j in range(1,7,2) ]
+				self.__code_couleur_droite_RVB[i].set(triplet[i])
+		else:
+			nouvelle_couleur[1] = self.__stringvar_couleur_gauche.get()
+			nouvelle_couleur[2] = self.__stringvar_couleur_droite.get()
+		self.__cube_couleur.changerCouleur(self.__canvas_couleur,nouvelle_couleur)
+		for i in range(3):
+			# on modifie chaque entry pour la face, en fonction du code en hexadecimal
+			triplet = [ int(code[j:j+2],16) for j in range(1,7,2) ]
+			self.__code_couleur_haut_RVB[i].set(triplet[i])
+	def updateCouleurGauche(self,valeur):
+		val = int(valeur)
+		code = self.dec2hex(self.calculerTriplet(val))
+		print("code hexa :",code)
+		self.__stringvar_couleur_gauche.set(code)
+		# les couleurs automatiques ne sont pas parfaites, mais dans certains cas ça marche plutot bien
+		# il faut aussi bouger les sliders en fonction des valeurs
+		
+		nouvelle_couleur = [None,code,None]
+		if(self.__mode_auto.get()):
+			nouvelle_couleur[0] = self.dec2hex(self.calculerTriplet(int(2.6923*val)))
+			nouvelle_couleur[2] = self.dec2hex(self.calculerTriplet(int(1.9692*val)))
+			self.__stringvar_couleur_haut.set(nouvelle_couleur[0])
+			self.__stringvar_couleur_droite.set(nouvelle_couleur[2]) # valeurs calculees (precision arbitraire)
+			# on met a jour les Entry des autres faces
+			for i in range(3):
+				# on modifie chaque entry pour la face, en fonction du code en hexadecimal
+				triplet = [ int(nouvelle_couleur[0][j:j+2],16) for j in range(1,7,2) ]
+				self.__code_couleur_haut_RVB[i].set(triplet[i])
+			for i in range(3):
+				triplet = [ int(nouvelle_couleur[2][j:j+2],16) for j in range(1,7,2) ]
+				self.__code_couleur_droite_RVB[i].set(triplet[i])
+		else:
+			nouvelle_couleur[0] = self.__stringvar_couleur_haut.get()
+			nouvelle_couleur[2] = self.__stringvar_couleur_droite.get()
+		self.__cube_couleur.changerCouleur(self.__canvas_couleur,nouvelle_couleur)
+		for i in range(3):
+			# on modifie chaque entry pour la face, en fonction du code en hexadecimal
+			triplet = [ int(code[j:j+2],16) for j in range(1,7,2) ]
+			self.__code_couleur_gauche_RVB[i].set(triplet[i])
+	def updateCouleurDroite(self,valeur):
+		val = int(valeur)
+		code = self.dec2hex(self.calculerTriplet(val))
+		print("code hexa :",code)
+		self.__stringvar_couleur_droite.set(code)
+		# les couleurs automatiques ne sont pas parfaites, mais dans certains cas ça marche plutot bien
+		# il faut aussi bouger les sliders en fonction des valeurs
+		
+		nouvelle_couleur = [None,None,code]
+		if(self.__mode_auto.get()):
+			nouvelle_couleur[0] = self.dec2hex(self.calculerTriplet(int(2.6923*val)))
+			nouvelle_couleur[1] = self.dec2hex(self.calculerTriplet(int(1.9692*val)))
+			self.__stringvar_couleur_haut.set(nouvelle_couleur[0])
+			self.__stringvar_couleur_gauche.set(nouvelle_couleur[1]) # valeurs calculees (precision arbitraire)
+			# on met a jour les Entry des autres faces
+			for i in range(3):
+				# on modifie chaque entry pour la face, en fonction du code en hexadecimal
+				triplet = [ int(nouvelle_couleur[0][j:j+2],16) for j in range(1,7,2) ]
+				self.__code_couleur_haut_RVB[i].set(triplet[i])
+			for i in range(3):
+				triplet = [ int(nouvelle_couleur[1][j:j+2],16) for j in range(1,7,2) ]
+				self.__code_couleur_gauche_RVB[i].set(triplet[i])
+		else:
+			nouvelle_couleur[0] = self.__stringvar_couleur_haut.get()
+			nouvelle_couleur[1] = self.__stringvar_couleur_gauche.get()
+		self.__cube_couleur.changerCouleur(self.__canvas_couleur,nouvelle_couleur)
+		for i in range(3):
+			# on modifie chaque entry pour la face, en fonction du code en hexadecimal
+			triplet = [ int(code[j:j+2],16) for j in range(1,7,2) ]
+			self.__code_couleur_droite_RVB[i].set(triplet[i])
+
+	# Constructeur de l'application
+
 	def __init__(self):
 
 		# Root
@@ -298,7 +517,7 @@ class App:
 
 		# Menus
 
-		self.menuFrame = tk.Frame(self.root,bg="red")
+		self.menuFrame = tk.Frame(self.root,bg="red") # ne pas oublier d'enlever le bg
 		self.menuFrame.pack(side=tk.TOP,expand=True,fill=tk.X,anchor="n")
 
 		self.bottomFrame = tk.Frame(self.root,bg="blue")
@@ -314,6 +533,9 @@ class App:
 		self.deroulFichier.add_command(label="Sauver", command=self.sauverFichier)
 		self.deroulFichier.add_command(label="Annuler", command=self.annulerDernierCube)
 		self.root.bind("<Control-z>", self.annulerDernierCube)
+		self.visualiser = tk.BooleanVar(value=False)
+		self.deroulFichier.add_checkbutton(label="Visualiser", variable=self.visualiser)
+		self.deroulFichier.add_command(label="Couleur", command=self.ouvrirFenetreCouleur)
 
 		# on desactive les options annuler et sauver
 		self.deroulFichier.entryconfigure(2,state="disabled")
