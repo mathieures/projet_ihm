@@ -67,3 +67,15 @@ class Cube:
 
 	def effacer(self,pcanvas):
 		pcanvas.delete(self.__haut,self.__gauche,self.__droite)
+
+	def disable(self,pcanvas):
+		# fonction qui "desactive" le cube, il sera insensible aux bindings (pour la previsualisation)
+		pcanvas.itemconfig(self.__haut,state='disabled')
+		pcanvas.itemconfig(self.__gauche,state='disabled')
+		pcanvas.itemconfig(self.__droite,state='disabled')
+
+	def priorite(self,pcanvas):
+		# fonction pour rendre le cube visible au premier plan
+		pcanvas.tag_raise(self.__haut)
+		pcanvas.tag_raise(self.__gauche)
+		pcanvas.tag_raise(self.__droite)

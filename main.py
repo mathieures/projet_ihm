@@ -10,7 +10,7 @@ class App:
 
 	CUBES = [] # liste des cubes places
 
-	precoords = () # Tuple Pour memoriser les coordonnees precedentes pour le previsualisation
+	precoords = () # Tuple Pour memoriser les coordonnees precedentes pour la previsualisation
 	# Exportation en .SVG
 
 	def dessinerGrilleSVG(self, pfichier):
@@ -228,32 +228,46 @@ class App:
 
 	def onMotion(self, event):
 		d = self.grille.definition
-		coordsEvent = (event.x, event.y)
+		coordsEvent = (event.x,event.y)
 		coordsGrille = self.grille.canvasToGrille(coordsEvent)
+
 		if(self.cubeTest == None):
+			#On cree le cube qui sera celui de la previsualisation
 			if(self.grille.is_in_grille(coordsEvent)):
 				self.cubeTest = Cube.Cube(self.canv,self.grille,coordsGrille,0,pcouleur=("#f2e6e3","#f2e6e3","#f2e6e3")) # On place le cube si l'utilisateur entre dans la grille
+				self.cubeTest.disable(self.canv) # on met le cube et disabled pour qu'on ne puisse par cliquer dessus
 				self.precoords = coordsEvent
 		else:
-			new_coords = self.grille.grilleToCanvas(self.grille.closestPoint(self.grille.canvasToGrille(coordsEvent)))
-			new_coords_grille = self.grille.canvasToGrille(new_coords)
-			if(new_coords_grille in self.DICO):
-				h = max(self.DICO[new_coords_grille]) + 1
-				new_coords2 = (new_coords[0], new_coords[1]-d*h)
-				# la difference entre la case d'avant et la nouvelle pour bouger le cube
-				delta_x = new_coords2[0] - self.precoords[0]
-				delta_y = new_coords2[1] - self.precoords[1]
+			currentFace = self.canv.find_withtag("current") # id du polygone sur lequel on est
+			new_coords = self.grille.grilleToCanvas(self.grille.closestPointUp(self.grille.canvasToGrille(coordsEvent)))
+			if(self.canv.type(currentFace) == "polygon"): # si on a est bien sur un polygone (une face de cube)
+				idCube = int(self.canv.gettags(currentFace)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
+				for cube in self.CUBES: # on teste chaque cube deja place
+					if cube.id == idCube: # si c'est celui sur lequel on est
+						x,y = self.grille.canvasToGrille(cube.coords) # coordonnees 2D "reelles" du cube dans la grille
+						# on teste les id de faces pour savoir laquelle c'etait ; currentFace[0] car c'est un tuple
+						# on adapte la position en fonction de la face courante
+						if currentFace[0] == cube.haut:
+							x -= 1
+							y -= 1
+						elif currentFace[0] == cube.gauche:
+							y += 1
+						elif currentFace[0] == cube.droite:
+							x +=1
 
-				self.precoords = new_coords2
-			else:
+						new_coords2 = self.grille.grilleToCanvas((x,y))
+						delta_x = new_coords2[0] - self.precoords[0]
+						delta_y = new_coords2[1] - self.precoords[1]
+						self.canv.move("cube_"+str(self.cubeTest.id), delta_x,delta_y)
+						self.precoords = new_coords2
+						break
+
+			elif self.grille.is_in_grille(coordsEvent):
 				delta_x = new_coords[0] - self.precoords[0]
 				delta_y = new_coords[1] - self.precoords[1]
 
 				self.precoords = new_coords
-
-			self.canv.move(self.cubeTest.id, delta_x,delta_y)
-			self.canv.move(self.cubeTest.id+1, delta_x,delta_y)
-			self.canv.move(self.cubeTest.id+2, delta_x,delta_y)
+				self.canv.move("cube_"+str(self.cubeTest.id), delta_x,delta_y)
 
 	def onClick(self,event):
 		"""En cas de clic sur le canvas"""
@@ -262,11 +276,7 @@ class App:
 		# print("click on :",currentCoords,"=>",convertedCoords)
 
 		faceCliquee = self.canv.find_withtag("current") # id du polygone sur lequel on a clique
-		if self.grille.is_in_grille(currentCoords):
-			# sinon ce n'est pas un polygone alors on a clique autre part : on regarde si c'est dans la grille
-			# il faut supprimer la limite de placement en vertical vers le haut, sinon on peut pas faire + de 1 cube en (0,0)
-			hauteur = 0
-			self.placerCube(self.grille.closestPointUp(convertedCoords),hauteur) # on ajuste le point 0.5 case plus haut
+
 		if(self.canv.type(faceCliquee) == "polygon"): # si on a bien clique sur un polygone (une face de cube)
 			idCube = int(self.canv.gettags(faceCliquee)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
 			for cube in self.CUBES: # on teste chaque cube deja place
@@ -289,7 +299,7 @@ class App:
 			# il faut supprimer la limite de placement en vertical vers le haut, sinon on peut pas faire + de 1 cube en (0,0)
 			hauteur = 0
 			self.placerCube(self.grille.closestPointUp(convertedCoords),hauteur) # on ajuste le point 0.5 case plus haut
-
+		self.cubeTest.priorite(self.canv)
 
 	def __init__(self):
 
