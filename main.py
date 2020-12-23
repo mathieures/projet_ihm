@@ -3,6 +3,8 @@ import Grille
 import Cube
 from tkinter import filedialog,messagebox
 
+import time # a supp
+
 class App:
 
 	# DICO : contient la position 3D de tous les cubes sous la forme DICO[(x,y)] = [hauteur_1,hauteur_2...]
@@ -156,7 +158,7 @@ class App:
 		else:
 			print("plus de cubes dans la liste")
 
-	def placerCube(self,pcoordsGrille,phauteur,pcouleur=__couleur_cube):
+	def placerCube(self,pcoordsGrille,phauteur,pcouleur=None):
 		"""
 		Prend en parametre des coordonnees de self.grille, comme (2.125, 4.08) (peut-etre a changer ?)
 		Attention : recale la position au point le plus proche (closestPoint)
@@ -166,7 +168,8 @@ class App:
 
 		# on transforme les coordonnees 3D en coordonnees 2D "aplaties", transposees "comme on les voit", sans hauteur
 		coordsGrille = (coords3D[0]-phauteur,coords3D[1]-phauteur)
-
+		if not(pcouleur):
+			pcouleur = self.__couleur_cube
 		cube = Cube.Cube(self.canv,self.grille,coordsGrille,phauteur,pcouleur)
 		# print("  placed cube",cube.id,"at :",(*pcoordsGrille,phauteur),"--",str(coordsGrille)) # coords 3D puis 2D
 
@@ -205,9 +208,9 @@ class App:
 
 		self.CUBES.append(cube)
 		# on active les options d'exportation, de sauvegarde et d'annulation
-		self.deroulFichier.entryconfigure(2,state="active")
-		self.deroulFichier.entryconfigure(3,state="active")
-		self.deroulFichier.entryconfigure(4,state="active")
+		self.deroulFichier.entryconfigure(2,state="normal")
+		self.deroulFichier.entryconfigure(3,state="normal")
+		self.deroulFichier.entryconfigure(4,state="normal")
 		return cube # ne sert a rien pour l'instant, mais au cas ou
 
 	def placerCubeHaut(self,pposition3D):
@@ -233,11 +236,14 @@ class App:
 		R = ((nombre // 256) // 256) % 256
 		return (R,V,B)
 
+	def hex2dec(self,code):
+		"""Convertit un code hexadecimal (commançant par #) en tuple d'entiers"""
+		return [ int(code[j:j+2],16) for j in range(1,7,2) ]
 
 	def dec2hex(self,triplet):
 		"""
-		Convertit le tuple donne en parametre en chaine de caractere
-		repesentant la couleur en hexadecimal
+		Convertit le tuple d'entiers donne en parametre
+		en chaine de caractere representant la couleur en hexadecimal
 		"""
 		res = "#"
 		for i in range(3):
@@ -249,94 +255,100 @@ class App:
 
 	def ouvrirFenetreCouleur(self):
 		"""Ouvre la fenetre de selection des couleurs pour un cube"""
+
 		self.__fenetre_couleur = tk.Toplevel(self.root)
 		
 		# Visualisation du cube a gauche
 		self.__canvas_couleur = tk.Canvas(self.__fenetre_couleur,width=160,height=100) # a equilibrer
-		# self.__canvas_couleur = tk.Canvas(frame_couleur_RVB,width=50,height=50)
 		self.__canvas_couleur.pack(side=tk.LEFT)
-		grille_couleur = Grille.Grille(self.__canvas_couleur,25,1,1,porigine=(80,50)) # d = 10, taille_x,taille_y = 1,1
-		self.__cube_couleur = Cube.Cube(self.__canvas_couleur,grille_couleur,(0,0),self.__couleur_cube)
 
-		frame_couleur_right = tk.Frame(self.__fenetre_couleur,bg='blue') # ne pas oublier d'enlever le bg
+		grille_couleur = Grille.Grille(self.__canvas_couleur,25,1,1,porigine=(80,50)) # d = 10, taille_x,taille_y = 1,1
+		self.__cube_couleur = Cube.Cube(self.__canvas_couleur,grille_couleur,(0,0),phauteur=0,pcouleur=self.__couleur_cube)
+
+		# Initialisation des Frames
+		frame_couleur_right = tk.Frame(self.__fenetre_couleur)
 		frame_couleur_right.pack(side=tk.TOP)
-		frame_couleur_RVB = tk.Frame(frame_couleur_right,bg='red') # ne pas oublier d'enlever le bg
+		frame_couleur_RVB = tk.Frame(frame_couleur_right)
 		frame_couleur_RVB.pack(side=tk.TOP,anchor="nw")
 
-		frame_couleur_haut = tk.Frame(frame_couleur_right,bg='pink') # ne pas oublier d'enlever le bg
+		frame_couleur_haut = tk.Frame(frame_couleur_right)
 		frame_couleur_haut.pack(side=tk.TOP)
-		frame_couleur_gauche = tk.Frame(frame_couleur_right,bg='green') # ne pas oublier d'enlever le bg
+		frame_couleur_gauche = tk.Frame(frame_couleur_right)
 		frame_couleur_gauche.pack(side=tk.TOP)
-		frame_couleur_droite = tk.Frame(frame_couleur_right,bg='red') # ne pas oublier d'enlever le bg
+		frame_couleur_droite = tk.Frame(frame_couleur_right)
 		frame_couleur_droite.pack(side=tk.TOP)
 
-		bottom_frame_couleur = tk.Frame(self.__fenetre_couleur,bg='green')
+		bottom_frame_couleur = tk.Frame(self.__fenetre_couleur)
 		bottom_frame_couleur.pack(side=tk.BOTTOM)
 		
-		# Affichage des codes couleur a droite synchronisees avec les sliders
+		# Codes couleur synchronises avec les sliders
 		# Codes en hexadecimal
 		self.__stringvar_couleur_haut = tk.StringVar(value=self.__couleur_cube[0])
 		self.__stringvar_couleur_gauche = tk.StringVar(value=self.__couleur_cube[1])
 		self.__stringvar_couleur_droite = tk.StringVar(value=self.__couleur_cube[2])
 
-		# Valeurs decimales
-		self.__code_couleur_haut_RVB = [tk.IntVar(value=int(self.__stringvar_couleur_haut.get()[1:3],16)), # est-ce qu'avoir des intvar sert vraiment ?
-										tk.IntVar(value=int(self.__stringvar_couleur_haut.get()[3:5],16)),
-										tk.IntVar(value=int(self.__stringvar_couleur_haut.get()[5:7],16))]
-		self.__code_couleur_gauche_RVB = [tk.IntVar(value=int(self.__stringvar_couleur_gauche.get()[1:3],16)),
-										tk.IntVar(value=int(self.__stringvar_couleur_gauche.get()[3:5],16)),
-										tk.IntVar(value=int(self.__stringvar_couleur_gauche.get()[5:7],16))]
-		self.__code_couleur_droite_RVB = [tk.IntVar(value=int(self.__stringvar_couleur_droite.get()[1:3],16)),
-										tk.IntVar(value=int(self.__stringvar_couleur_droite.get()[3:5],16)),
-										tk.IntVar(value=int(self.__stringvar_couleur_droite.get()[5:7],16))]
+		# Valeurs decimales, calculees grace aux codes hexa
+		self.__code_couleur_haut_RVB = tk.IntVar(value=int(self.__stringvar_couleur_haut.get()[1:],16))
+		self.__code_couleur_gauche_RVB = tk.IntVar(value=int(self.__stringvar_couleur_gauche.get()[1:],16))
+		self.__code_couleur_droite_RVB = tk.IntVar(value=int(self.__stringvar_couleur_droite.get()[1:],16))
 
-
-
-		label_couleur_texte = tk.Label(frame_couleur_RVB,text="  R :     V :     B :     code hex :")
+		# Affichage des codes dans des Entries
+		label_couleur_texte = tk.Label(frame_couleur_RVB,text="  R :     V :     B :    code hex :")
 		label_couleur_texte.pack()
-		couleur_haut_entry_R = tk.Entry(frame_couleur_haut,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_haut_RVB[0]) # il faudra empecher les txt + longs que 3
-		couleur_haut_entry_V = tk.Entry(frame_couleur_haut,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_haut_RVB[1]) # il faudra empecher les txt + longs que 3
-		couleur_haut_entry_B = tk.Entry(frame_couleur_haut,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_haut_RVB[2]) # il faudra empecher les txt + longs que 3
-		couleur_haut_entry_R.pack(side=tk.LEFT)
-		couleur_haut_entry_V.pack(side=tk.LEFT)
-		couleur_haut_entry_B.pack(side=tk.LEFT)
-		couleur_gauche_entry_R = tk.Entry(frame_couleur_gauche,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_gauche_RVB[0]) # il faudra empecher les txt + longs que 3
-		couleur_gauche_entry_V = tk.Entry(frame_couleur_gauche,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_gauche_RVB[1]) # il faudra empecher les txt + longs que 3
-		couleur_gauche_entry_B = tk.Entry(frame_couleur_gauche,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_gauche_RVB[2]) # il faudra empecher les txt + longs que 3
-		couleur_gauche_entry_R.pack(side=tk.LEFT)
-		couleur_gauche_entry_V.pack(side=tk.LEFT)
-		couleur_gauche_entry_B.pack(side=tk.LEFT)
-		couleur_droite_entry_R = tk.Entry(frame_couleur_droite,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_droite_RVB[0]) # il faudra empecher les txt + longs que 3
-		couleur_droite_entry_V = tk.Entry(frame_couleur_droite,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_droite_RVB[1]) # il faudra empecher les txt + longs que 3
-		couleur_droite_entry_B = tk.Entry(frame_couleur_droite,width=4,justify=tk.CENTER,textvariable=self.__code_couleur_droite_RVB[2]) # il faudra empecher les txt + longs que 3
-		couleur_droite_entry_R.pack(side=tk.LEFT)
-		couleur_droite_entry_V.pack(side=tk.LEFT)
-		couleur_droite_entry_B.pack(side=tk.LEFT)
+		
+		triplets = [self.calculerTriplet(self.__code_couleur_haut_RVB.get()),
+					self.calculerTriplet(self.__code_couleur_gauche_RVB.get()),
+					self.calculerTriplet(self.__code_couleur_droite_RVB.get())]
+
+		couleur_haut_entry_R = tk.Entry(frame_couleur_haut,width=4,justify=tk.CENTER) # il faudrait empecher les txt + longs que 3
+		couleur_haut_entry_V = tk.Entry(frame_couleur_haut,width=4,justify=tk.CENTER) # il faudrait empecher les txt + longs que 3
+		couleur_haut_entry_B = tk.Entry(frame_couleur_haut,width=4,justify=tk.CENTER) # il faudrait empecher les txt + longs que 3
+		self.__couleur_haut_entry_RVB = [couleur_haut_entry_R, couleur_haut_entry_V, couleur_haut_entry_B]
+		for i in range(3):
+			self.__couleur_haut_entry_RVB[i].insert(tk.END,str(triplets[0][i]))
+			self.__couleur_haut_entry_RVB[i].pack(side=tk.LEFT)
+
+		couleur_gauche_entry_R = tk.Entry(frame_couleur_gauche,width=4,justify=tk.CENTER) # il faudrait empecher les txt + longs que 3
+		couleur_gauche_entry_V = tk.Entry(frame_couleur_gauche,width=4,justify=tk.CENTER) # il faudrait empecher les txt + longs que 3
+		couleur_gauche_entry_B = tk.Entry(frame_couleur_gauche,width=4,justify=tk.CENTER) # il faudrait empecher les txt + longs que 3
+		self.__couleur_gauche_entry_RVB = [couleur_gauche_entry_R, couleur_gauche_entry_V, couleur_gauche_entry_B]
+		for i in range(3):
+			self.__couleur_gauche_entry_RVB[i].insert(tk.END,str(triplets[1][i]))
+			self.__couleur_gauche_entry_RVB[i].pack(side=tk.LEFT)
+		
+		couleur_droite_entry_R = tk.Entry(frame_couleur_droite,width=4,justify=tk.CENTER) # il faudrait empecher les txt + longs que 3
+		couleur_droite_entry_V = tk.Entry(frame_couleur_droite,width=4,justify=tk.CENTER) # il faudrait empecher les txt + longs que 3
+		couleur_droite_entry_B = tk.Entry(frame_couleur_droite,width=4,justify=tk.CENTER) # il faudrait empecher les txt + longs que 3
+		self.__couleur_droite_entry_RVB = [couleur_droite_entry_R, couleur_droite_entry_V, couleur_droite_entry_B]
+		for i in range(3):
+			self.__couleur_droite_entry_RVB[i].insert(tk.END,str(triplets[2][i]))
+			self.__couleur_droite_entry_RVB[i].pack(side=tk.LEFT)
+
+		couleur_haut_hexa_entry = tk.Entry(frame_couleur_haut,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_haut) # il faudrait rajouter la possiblite d'ecrire la couleur
+		couleur_gauche_hexa_entry = tk.Entry(frame_couleur_gauche,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_gauche) # il faudrait rajouter la possiblite d'ecrire la couleur
+		couleur_droite_hexa_entry = tk.Entry(frame_couleur_droite,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_droite) # il faudrait rajouter la possiblite d'ecrire la couleur
+
+		for entry in (couleur_haut_hexa_entry,couleur_gauche_hexa_entry,couleur_droite_hexa_entry):
+			entry.pack(side=tk.LEFT)
+
+		# Sliders affiches en bas
+		# Note : modifier une variable liee n'appelle pas le callback, utile pour modifier toutes les scales en meme temps
+		# (https://stackoverflow.com/questions/4038517/tkinter-set-a-scale-value-without-triggering-callback)
+		scale_couleur_haut = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.COULEUR_MAX,
+									command=self.updateCouleurHaut, showvalue=0, resolution=1, length=200,
+									variable=self.__code_couleur_haut_RVB).pack() # length a equilibrer
+		scale_couleur_gauche = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.COULEUR_MAX,
+									command=self.updateCouleurGauche, showvalue=0, resolution=1, length=200,
+									variable=self.__code_couleur_gauche_RVB).pack()
+		scale_couleur_droite = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.COULEUR_MAX,
+									command=self.updateCouleurDroite, showvalue=0, resolution=1, length=200,
+									variable=self.__code_couleur_droite_RVB).pack()
 
 
-		couleur_haut_hexa_entry = tk.Entry(frame_couleur_haut,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_haut) # il faudra rajouter la possiblite d'ecrire la couleur
-		couleur_gauche_hexa_entry = tk.Entry(frame_couleur_gauche,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_gauche) # il faudra rajouter la possiblite d'ecrire la couleur
-		couleur_droite_hexa_entry = tk.Entry(frame_couleur_droite,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_droite) # il faudra rajouter la possiblite d'ecrire la couleur
-		couleur_haut_hexa_entry.pack(side=tk.LEFT)
-		couleur_gauche_hexa_entry.pack(side=tk.LEFT)
-		couleur_droite_hexa_entry.pack(side=tk.LEFT)
-
-		# Sliders en bas
-		# il faut positionner la handle des sliders en fonction des valeurs qu'on a deja
-		scale_couleur_haut = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.COULEUR_MAX, 
-										showvalue=0, resolution=1,command=self.updateCouleurHaut,length=200) # length a equilibrer
-		scale_couleur_gauche = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.COULEUR_MAX, 
-										showvalue=0, resolution=1,command=self.updateCouleurGauche,length=200)
-		scale_couleur_droite = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.COULEUR_MAX, 
-										showvalue=0, resolution=1,command=self.updateCouleurDroite,length=200)
-		scale_couleur_haut.pack()
-		scale_couleur_gauche.pack()
-		scale_couleur_droite.pack()
-
-		# Mode avance
+		# Mode automatique
 		self.__mode_auto = tk.BooleanVar(value=True) # definit le comportement des sliders : mis a jour automatiquement (True) ou separement (False)
-		check_mode_inde = tk.Checkbutton(bottom_frame_couleur,text="Modifier ensemble",variable=self.__mode_auto)
-		check_mode_inde.pack(side=tk.LEFT)
+		couleur_check_mode_auto = tk.Checkbutton(bottom_frame_couleur,text="Modifier ensemble",variable=self.__mode_auto)
+		couleur_check_mode_auto.pack(side=tk.LEFT)
 
 		# Confirmer
 		couleur_bouton_ok = tk.Button(bottom_frame_couleur,text="Ok",command=self.confirmerCouleur)
@@ -354,7 +366,7 @@ class App:
 		coordsGrille = self.grille.canvasToGrille(coordsEvent)
 
 		if(self.cubeTest == None):
-			#On cree le cube qui sera celui de la previsualisation
+			# On cree le cube qui sera celui de la previsualisation
 			if(self.grille.is_in_grille(coordsEvent)):
 				self.cubeTest = Cube.Cube(self.canv,self.grille,coordsGrille,0,pcouleur=("#f2e6e3","#f2e6e3","#f2e6e3")) # On place le cube si l'utilisateur entre dans la grille
 				self.cubeTest.disable(self.canv) # on met le cube et disabled pour qu'on ne puisse par cliquer dessus
@@ -421,7 +433,8 @@ class App:
 			# il faut supprimer la limite de placement en vertical vers le haut, sinon on peut pas faire + de 1 cube en (0,0)
 			hauteur = 0
 			self.placerCube(self.grille.closestPointUp(convertedCoords),hauteur) # on ajuste le point 0.5 case plus haut
-		self.cubeTest.priorite(self.canv)
+		if(self.cubeTest):
+			self.cubeTest.priorite(self.canv)
 
 	def updateCouleurHaut(self,valeur):
 		"""
@@ -429,95 +442,132 @@ class App:
 		des sliders de selection de couleur. On met aussi a jour la couleur des faces du cube.
 		"""
 		val = int(valeur)
-		code = self.dec2hex(self.calculerTriplet(val))
-		print("code hexa :",code)
+		triplet_haut = self.calculerTriplet(val)
+		code = self.dec2hex(triplet_haut)
+		
 		self.__stringvar_couleur_haut.set(code)
-		# les couleurs automatiques ne sont pas parfaites, mais dans certains cas ça marche plutot bien
-		# il faut aussi bouger les sliders en fonction des valeurs
 		
 		nouvelle_couleur = [code,None,None]
-
+		
+		# si le mode automatique est actif, on modifie les autres faces
+		# les couleurs automatiques ne sont pas parfaites, mais dans certains cas ça marche plutot bien
 		if(self.__mode_auto.get()):
 			nouvelle_couleur[1] = self.dec2hex(self.calculerTriplet(int(0.73142*val)))
 			nouvelle_couleur[2] = self.dec2hex(self.calculerTriplet(int(0.37142*val)))
+
+			# codes RVB
 			self.__stringvar_couleur_gauche.set(nouvelle_couleur[1]) # valeurs calculees (precision arbitraire)
 			self.__stringvar_couleur_droite.set(nouvelle_couleur[2])
-			# on met a jour les Entry des autres faces
+			
+			# codes hexa
+			self.__code_couleur_gauche_RVB.set(int(nouvelle_couleur[1][1:],16))
+			self.__code_couleur_droite_RVB.set(int(nouvelle_couleur[2][1:],16))
+
 			for i in range(3):
 				# on modifie chaque entry pour la face, en fonction du code en hexadecimal
-				triplet = [ int(nouvelle_couleur[1][j:j+2],16) for j in range(1,7,2) ]
-				self.__code_couleur_gauche_RVB[i].set(triplet[i])
+				triplet_temp = self.hex2dec(nouvelle_couleur[1])
+				self.__couleur_gauche_entry_RVB[i].delete(0,tk.END)
+				self.__couleur_gauche_entry_RVB[i].insert(tk.END,triplet_temp[i])
 			for i in range(3):
-				triplet = [ int(nouvelle_couleur[2][j:j+2],16) for j in range(1,7,2) ]
-				self.__code_couleur_droite_RVB[i].set(triplet[i])
+				triplet_temp = self.hex2dec(nouvelle_couleur[2])
+				self.__couleur_droite_entry_RVB[i].delete(0,tk.END)
+				self.__couleur_droite_entry_RVB[i].insert(tk.END,triplet_temp[i])
+
 		else:
 			nouvelle_couleur[1] = self.__stringvar_couleur_gauche.get()
 			nouvelle_couleur[2] = self.__stringvar_couleur_droite.get()
+		# dans tous les cas, on change la couleur du cube
 		self.__cube_couleur.changerCouleur(self.__canvas_couleur,nouvelle_couleur)
+		# pour chaque face, on modifie l'entry correspondante, en fonction du code en hexadecimal
 		for i in range(3):
-			# on modifie chaque entry pour la face, en fonction du code en hexadecimal
-			triplet = [ int(code[j:j+2],16) for j in range(1,7,2) ]
-			self.__code_couleur_haut_RVB[i].set(triplet[i])
+			self.__couleur_haut_entry_RVB[i].delete(0,tk.END)
+			self.__couleur_haut_entry_RVB[i].insert(tk.END,triplet_haut[i])
+
 	def updateCouleurGauche(self,valeur):
 		val = int(valeur)
-		code = self.dec2hex(self.calculerTriplet(val))
-		print("code hexa :",code)
+		triplet_gauche = self.calculerTriplet(val)
+		code = self.dec2hex(triplet_gauche)
+
 		self.__stringvar_couleur_gauche.set(code)
-		# les couleurs automatiques ne sont pas parfaites, mais dans certains cas ça marche plutot bien
-		# il faut aussi bouger les sliders en fonction des valeurs
-		
+
 		nouvelle_couleur = [None,code,None]
+		
 		if(self.__mode_auto.get()):
 			nouvelle_couleur[0] = self.dec2hex(self.calculerTriplet(int(2.6923*val)))
 			nouvelle_couleur[2] = self.dec2hex(self.calculerTriplet(int(1.9692*val)))
+
+			# codes RVB
 			self.__stringvar_couleur_haut.set(nouvelle_couleur[0])
 			self.__stringvar_couleur_droite.set(nouvelle_couleur[2]) # valeurs calculees (precision arbitraire)
+
+			# codes hexa
+			self.__code_couleur_haut_RVB.set(int(nouvelle_couleur[0][1:],16))
+			self.__code_couleur_droite_RVB.set(int(nouvelle_couleur[2][1:],16))
+
 			# on met a jour les Entry des autres faces
+			triplet_temp = self.hex2dec(nouvelle_couleur[0])
 			for i in range(3):
 				# on modifie chaque entry pour la face, en fonction du code en hexadecimal
-				triplet = [ int(nouvelle_couleur[0][j:j+2],16) for j in range(1,7,2) ]
-				self.__code_couleur_haut_RVB[i].set(triplet[i])
+				self.__couleur_haut_entry_RVB[i].delete(0,tk.END)
+				self.__couleur_haut_entry_RVB[i].insert(tk.END,triplet_temp[i])
+			triplet_temp = self.hex2dec(nouvelle_couleur[2])
 			for i in range(3):
-				triplet = [ int(nouvelle_couleur[2][j:j+2],16) for j in range(1,7,2) ]
-				self.__code_couleur_droite_RVB[i].set(triplet[i])
+				self.__couleur_droite_entry_RVB[i].delete(0,tk.END)
+				self.__couleur_droite_entry_RVB[i].insert(tk.END,triplet_temp[i])
+
 		else:
 			nouvelle_couleur[0] = self.__stringvar_couleur_haut.get()
 			nouvelle_couleur[2] = self.__stringvar_couleur_droite.get()
+		# dans tous les cas, on change la couleur du cube
 		self.__cube_couleur.changerCouleur(self.__canvas_couleur,nouvelle_couleur)
+		# pour chaque face, on modifie l'entry correspondante, en fonction du code en hexadecimal
 		for i in range(3):
-			# on modifie chaque entry pour la face, en fonction du code en hexadecimal
-			triplet = [ int(code[j:j+2],16) for j in range(1,7,2) ]
-			self.__code_couleur_gauche_RVB[i].set(triplet[i])
+			self.__couleur_gauche_entry_RVB[i].delete(0,tk.END)
+			self.__couleur_gauche_entry_RVB[i].insert(tk.END,triplet_gauche[i])
+
 	def updateCouleurDroite(self,valeur):
 		val = int(valeur)
-		code = self.dec2hex(self.calculerTriplet(val))
-		print("code hexa :",code)
-		self.__stringvar_couleur_droite.set(code)
-		# les couleurs automatiques ne sont pas parfaites, mais dans certains cas ça marche plutot bien
-		# il faut aussi bouger les sliders en fonction des valeurs
+		triplet_droite = self.calculerTriplet(val)
+		code_hexa = self.dec2hex(triplet_droite)
+
+		self.__stringvar_couleur_droite.set(code_hexa)
+
+		nouvelle_couleur = [None,None,code_hexa]
 		
-		nouvelle_couleur = [None,None,code]
 		if(self.__mode_auto.get()):
-			nouvelle_couleur[0] = self.dec2hex(self.calculerTriplet(int(2.6923*val)))
+			nouvelle_couleur[0] = self.dec2hex(self.calculerTriplet(int(2.6923*val))) # (precision arbitraire)
 			nouvelle_couleur[1] = self.dec2hex(self.calculerTriplet(int(1.9692*val)))
+			
+			# codes RVB
 			self.__stringvar_couleur_haut.set(nouvelle_couleur[0])
-			self.__stringvar_couleur_gauche.set(nouvelle_couleur[1]) # valeurs calculees (precision arbitraire)
-			# on met a jour les Entry des autres faces
+			self.__stringvar_couleur_gauche.set(nouvelle_couleur[1])
+
+			# codes hexa
+			self.__code_couleur_haut_RVB.set(int(nouvelle_couleur[0][1:],16))
+			self.__code_couleur_gauche_RVB.set(int(nouvelle_couleur[1][1:],16))
+
+			# mise a jour des Entry des autres faces
+			triplet_temp = self.hex2dec(nouvelle_couleur[0])
 			for i in range(3):
-				# on modifie chaque entry pour la face, en fonction du code en hexadecimal
-				triplet = [ int(nouvelle_couleur[0][j:j+2],16) for j in range(1,7,2) ]
-				self.__code_couleur_haut_RVB[i].set(triplet[i])
+				self.__couleur_haut_entry_RVB[i].delete(0,tk.END)
+				self.__couleur_haut_entry_RVB[i].insert(tk.END,triplet_temp[i])
+			triplet_temp = self.hex2dec(nouvelle_couleur[1])
 			for i in range(3):
-				triplet = [ int(nouvelle_couleur[1][j:j+2],16) for j in range(1,7,2) ]
-				self.__code_couleur_gauche_RVB[i].set(triplet[i])
+				self.__couleur_gauche_entry_RVB[i].delete(0,tk.END)
+				self.__couleur_gauche_entry_RVB[i].insert(tk.END,triplet_temp[i])
+
 		else:
+			# sinon, on modifie seulement l'actuelle
 			nouvelle_couleur[0] = self.__stringvar_couleur_haut.get()
 			nouvelle_couleur[1] = self.__stringvar_couleur_gauche.get()
+		
+		# dans tous les cas, on change la couleur du cube
 		self.__cube_couleur.changerCouleur(self.__canvas_couleur,nouvelle_couleur)
+		# pour chaque face, on modifie l'entry correspondante, en fonction du code en hexadecimal
 		for i in range(3):
-			# on modifie chaque entry pour la face, en fonction du code en hexadecimal
-			triplet = [ int(code[j:j+2],16) for j in range(1,7,2) ]
-			self.__code_couleur_droite_RVB[i].set(triplet[i])
+			self.__couleur_droite_entry_RVB[i].delete(0,tk.END)
+			self.__couleur_droite_entry_RVB[i].insert(tk.END,triplet_droite[i])
+
 
 	# Constructeur de l'application
 

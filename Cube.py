@@ -93,6 +93,4 @@ class Cube:
 
 	def priorite(self,pcanvas):
 		# fonction pour rendre le cube visible au premier plan
-		pcanvas.tag_raise(self.__haut)
-		pcanvas.tag_raise(self.__gauche)
-		pcanvas.tag_raise(self.__droite)
+		pcanvas.tag_raise("cube_"+str(self.__id))
