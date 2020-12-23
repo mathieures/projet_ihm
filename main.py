@@ -198,10 +198,10 @@ class App:
 				cube.selectionCube(self.canv)
 				self.cube_select = cube
 				# On bind les fleches directionnelles a la fonction deplacerCube
-				self.root.bind('<Left>', lambda event:self.deplacerCube(event,plus_y = 1)) # fleche de gauche, alors y+1
-				self.root.bind('<Right>', lambda event:self.deplacerCube(event,plus_y = -1)) # fleche de droite, alors y-1
-				self.root.bind('<Up>', lambda event:self.deplacerCube(event,plus_x = -1)) # fleche du haut, alors x-1
-				self.root.bind('<Down>', lambda event:self.deplacerCube(event,plus_x = 1)) # fleche du bas, alors x+1
+				self.root.bind('<Left>', lambda event:self.deplacerCube(event,plus_x = -1))
+				self.root.bind('<Right>', lambda event:self.deplacerCube(event,plus_x= 1))
+				self.root.bind('<Up>', lambda event:self.deplacerCube(event,plus_y = -1))
+				self.root.bind('<Down>', lambda event:self.deplacerCube(event,plus_y = 1))
 
 	def annulerDernierCube(self,event=None):
 		"""Annule le dernier placement de cube."""
