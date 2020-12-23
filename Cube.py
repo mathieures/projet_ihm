@@ -32,9 +32,10 @@ class Cube:
 		return (self.__couleur_haut, self.__couleur_gauche, self.__couleur_droite)
 
 	#constructeur
-	def __init__(self,pcanvas,pgrille,pcoordsGrille,phauteur=0,pcouleur=(__couleur_haut,__couleur_gauche,__couleur_droite)):
+	def __init__(self,pcanvas,pgrille,pcoordsGrille,pcoords3D,phauteur=0,pcouleur=(__couleur_haut,__couleur_gauche,__couleur_droite)):
 		# pcoords est un point de la grille, (hauteur 0 !!)
 
+		self.coords3D = pcoords3D
 		self.coords = pgrille.grilleToCanvas(pcoordsGrille)
 
 		self.dessiner(pcanvas,pgrille,phauteur,pcouleur)
@@ -71,6 +72,14 @@ class Cube:
 
 		self.changerCouleur(pcanvas,pcouleur)
 
+	def selectionCube(self,pcanvas):
+		pcanvas.itemconfig("cube_"+str(self.__haut),fill='red')
+
+	def deselectionCube(self,pcanvas):
+		pcanvas.itemconfig(self.__haut,fill=self.couleur[0])
+		pcanvas.itemconfig(self.__gauche,fill=self.couleur[1])
+		pcanvas.itemconfig(self.__droite,fill=self.couleur[2])
+
 	def effacer(self,pcanvas):
 		pcanvas.delete(self.__haut,self.__gauche,self.__droite)
 
@@ -85,12 +94,15 @@ class Cube:
 		self.__couleur_gauche = pcouleur[1]
 		self.__couleur_droite = pcouleur[2]
 
-	def disable(self,pcanvas):
+	def desactiver(self,pcanvas):
 		# fonction qui "desactive" le cube, il sera insensible aux bindings (pour la previsualisation)
-		pcanvas.itemconfig(self.__haut,state='disabled')
-		pcanvas.itemconfig(self.__gauche,state='disabled')
-		pcanvas.itemconfig(self.__droite,state='disabled')
+		pcanvas.itemconfig("cube_"+str(self.__haut),state='disabled')
 
 	def priorite(self,pcanvas):
 		# fonction pour rendre le cube visible au premier plan
-		pcanvas.tag_raise("cube_"+str(self.__id))
+		pcanvas.tag_raise("cube_"+str(self.__haut))
+
+	def changeCoords(self,pcanvas,pcoords):
+		pcanvas.coords(self.__haut, pcoords[0],pcoords[1])
+		pcanvas.coords(self.__gauche, pcoords[0],pcoords[1])
+		pcanvas.coords(self.__droite, pcoords[0],pcoords[1])
