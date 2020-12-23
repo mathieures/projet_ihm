@@ -152,7 +152,10 @@ class App:
 	def deplacerCube(self,event,plus_x = 0,plus_y = 0):
 		''' Fonction pour deplacer un cube en fonction des fleches directionnelles, les parametres
 			plus_x et plus_y indiquent ou sera placé le cube apres la fonction '''
-		x,y = self.cube_select.coords3D # x et y sont les positions 3D du cube, nous prenons alors en compte la hauteur
+		h = self.cube_select.h
+		x,y = self.grille.canvasToGrille(self.cube_select.coords) # x et y sont les positions 3D du cube, nous prenons alors en compte la hauteur
+		x += h
+		y += h
 		x2,y2 = x+plus_x,y+plus_y # prochaine position du cube
 		# On efface le cube selectionne, pour en mettre un autre a une nouvelle position
 		self.CUBES.remove(self.cube_select)
@@ -192,7 +195,6 @@ class App:
 			idCube = int(self.canv.gettags(faceCliquee)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
 			cube = self.rechercherCube(idCube)
 			if(cube != 0):
-				x,y = self.grille.canvasToGrille(cube.coords3D) # coordonnees 2D "reelles" du cube dans la grille
 				cube.selectionCube(self.canv)
 				self.cube_select = cube
 				# On bind les fleches directionnelles a la fonction deplacerCube
@@ -230,7 +232,7 @@ class App:
 		coordsGrille = (coords3D[0]-phauteur,coords3D[1]-phauteur)
 		if not(pcouleur):
 			pcouleur = self.__couleur_cube
-		cube = Cube.Cube(self.canv,self.grille,coordsGrille,coords3D,phauteur,pcouleur)
+		cube = Cube.Cube(self.canv,self.grille,coordsGrille,phauteur,pcouleur)
 		# print("  placed cube",cube.id,"at :",(*pcoordsGrille,phauteur),"--",str(coordsGrille)) # coords 3D puis 2D
 
 		indexCube = self.canv.find_all().index(cube.id) # index de la face du haut dans la liste de tous les elements du canvas

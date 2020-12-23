@@ -32,10 +32,9 @@ class Cube:
 		return (self.__couleur_haut, self.__couleur_gauche, self.__couleur_droite)
 
 	#constructeur
-	def __init__(self,pcanvas,pgrille,pcoordsGrille,pcoords3D,phauteur=0,pcouleur=(__couleur_haut,__couleur_gauche,__couleur_droite)):
+	def __init__(self,pcanvas,pgrille,pcoordsGrille,phauteur=0,pcouleur=(__couleur_haut,__couleur_gauche,__couleur_droite)):
 		# pcoords est un point de la grille, (hauteur 0 !!)
 
-		self.coords3D = pcoords3D
 		self.coords = pgrille.grilleToCanvas(pcoordsGrille)
 
 		self.dessiner(pcanvas,pgrille,phauteur,pcouleur)
