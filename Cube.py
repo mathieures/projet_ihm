@@ -23,21 +23,33 @@ class Cube:
 	def id(self):
 		return self.__id
 
-	@property
-	def h(self):
+	def _get_h(self):
 		return self.__h
+	def _set_h(self,ph):
+		self.__h = ph
+	h = property(_get_h, _set_h)
 
-	@property
-	def couleur(self):
+	def _get_couleur(self):
 		return (self.__couleur_haut, self.__couleur_gauche, self.__couleur_droite)
+	couleur = property(_get_couleur)
+
+	def _set_coords(self,pcoordsCanvas):
+		self.__coords = pcoordsCanvas
+	def _get_coords(self):
+		return self.__coords
+	coords = property(_get_coords, _set_coords)
+	
 
 	#constructeur
 	def __init__(self,pcanvas,pgrille,pcoordsGrille,phauteur=0,pcouleur=(__couleur_haut,__couleur_gauche,__couleur_droite)):
-		# pcoords est un point de la grille, (hauteur 0 !!)
+		# pcoordsGrille est un point de la grille, (hauteur 0 !!)
 
-		self.coords = pgrille.grilleToCanvas(pcoordsGrille)
+		self.__canvas = pcanvas
+		self.__grille = pgrille
+		self.__coords = pgrille.grilleToCanvas(pcoordsGrille)
+		self.__h = phauteur
 
-		self.dessiner(pcanvas,pgrille,phauteur,pcouleur)
+		self.dessiner(pcouleur)
 
 		self.__id = self.__haut
 
@@ -46,13 +58,11 @@ class Cube:
 		# print("destruction d'un cube")
 		return
 
-	def dessiner(self,pcanvas,pgrille,phauteur,pcouleur):
-		d = pgrille.definition
+	def dessiner(self,pcouleur):
+		d = self.__grille.definition
 		
-		x = self.coords[0]
-		y = self.coords[1]
-		self.__h = phauteur
-
+		x = self.__coords[0]
+		y = self.__coords[1]
 
 		A = (x-d,y-d/2) # haut gauche
 		B = (x+d,y-d/2) # haut droite
@@ -62,41 +72,50 @@ class Cube:
 		F = (x,y-d) # haut
 		
 		# on ajoute un tag aux faces, pour que quand on clique sur une face, on puisse avoir le cube
-		self.__haut = pcanvas.create_polygon(self.coords,B,F,A,outline="black")
+		self.__haut = self.__canvas.create_polygon(self.__coords,B,F,A,outline="black")
 		tag = "cube_"+str(self.__haut)
-		pcanvas.itemconfig(self.__haut,tags=tag)
+		self.__canvas.itemconfig(self.__haut,tags=tag)
 		
-		self.__gauche = pcanvas.create_polygon(self.coords,A,C,E,outline="black",tags=tag)
-		self.__droite = pcanvas.create_polygon(self.coords,B,D,E,outline="black",tags=tag)
+		self.__gauche = self.__canvas.create_polygon(self.__coords,A,C,E,outline="black",tags=tag)
+		self.__droite = self.__canvas.create_polygon(self.__coords,B,D,E,outline="black",tags=tag)
 
-		self.changerCouleur(pcanvas,pcouleur)
+		self.changerCouleur(pcouleur)
 
-	def selectionCube(self,pcanvas):
-		pcanvas.itemconfig("cube_"+str(self.__haut),fill='red')
+	def selectionCube(self):
+		self.changerCouleur('red')
 
-	def deselectionCube(self,pcanvas):
-		pcanvas.itemconfig(self.__haut,fill=self.couleur[0])
-		pcanvas.itemconfig(self.__gauche,fill=self.couleur[1])
-		pcanvas.itemconfig(self.__droite,fill=self.couleur[2])
+	def deselectionCube(self):
+		self.changerCouleur((self.__couleur_haut,self.__couleur_gauche,self.__couleur_droite))
 
-	def effacer(self,pcanvas):
-		pcanvas.delete(self.__haut,self.__gauche,self.__droite)
+	def effacer(self):
+		self.__canvas.delete(self.__haut,self.__gauche,self.__droite)
 
-	def changerCouleur(self,pcanvas,pcouleur):
+	def changerCouleur(self,pcouleur):
 		"""
-		pcouleur est un tuple/liste de 3 chaines en hexadecimal commençant par #
+		pcouleur est soit une str comme 'red' soit un tuple de 3 chaines en hexadecimal commençant par #
 		"""
-		pcanvas.itemconfig(self.__haut,fill=pcouleur[0])
-		pcanvas.itemconfig(self.__gauche,fill=pcouleur[1])
-		pcanvas.itemconfig(self.__droite,fill=pcouleur[2])
-		self.__couleur_haut = pcouleur[0]
-		self.__couleur_gauche = pcouleur[1]
-		self.__couleur_droite = pcouleur[2]
+		if type(pcouleur) == str:
+			self.__canvas.itemconfig("cube_"+str(self.__haut),fill=pcouleur)
+		else:
+			self.__couleur_haut = pcouleur[0]
+			self.__couleur_gauche = pcouleur[1]
+			self.__couleur_droite = pcouleur[2]
+			self.__canvas.itemconfig(self.__haut,fill=pcouleur[0])
+			self.__canvas.itemconfig(self.__gauche,fill=pcouleur[1])
+			self.__canvas.itemconfig(self.__droite,fill=pcouleur[2])
 
-	def desactiver(self,pcanvas):
+	def desactiver(self):
 		# fonction qui "desactive" le cube, il sera insensible aux bindings (pour la previsualisation)
-		pcanvas.itemconfig("cube_"+str(self.__haut),state='disabled')
+		self.__canvas.itemconfig("cube_"+str(self.__haut),state='disabled')
 
-	def priorite(self,pcanvas):
+	def priorite(self):
 		# fonction pour rendre le cube visible au premier plan
-		pcanvas.tag_raise("cube_"+str(self.__haut))
+		self.__canvas.tag_raise("cube_"+str(self.__haut))
+
+	def coordsTo3D(self):
+		"""
+		Retourne les coordonnees de la case "de base" sur lequel le cube est.
+		Note : ne va pas au point le plus proche, car on pourrait vouloir transformer des coordonnees precises.
+		"""
+		coordsGrille = self.__grille.canvasToGrille(self.__coords)
+		return (coordsGrille[0]+self.__h, coordsGrille[1]+self.__h)

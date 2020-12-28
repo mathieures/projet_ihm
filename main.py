@@ -411,8 +411,8 @@ class App:
 			self.__couleur_droite_entry_RVB[i].pack(side=tk.LEFT)
 
 		couleur_haut_hexa_entry = tk.Entry(frame_couleur_haut,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_haut) # il faudrait rajouter la possiblite d'ecrire la couleur
-		couleur_gauche_hexa_entry = tk.Entry(frame_couleur_gauche,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_gauche) # il faudrait rajouter la possiblite d'ecrire la couleur
-		couleur_droite_hexa_entry = tk.Entry(frame_couleur_droite,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_droite) # il faudrait rajouter la possiblite d'ecrire la couleur
+		couleur_gauche_hexa_entry = tk.Entry(frame_couleur_gauche,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_gauche)
+		couleur_droite_hexa_entry = tk.Entry(frame_couleur_droite,width=10,justify=tk.CENTER,textvariable=self.__stringvar_couleur_droite)
 
 		for entry in (couleur_haut_hexa_entry,couleur_gauche_hexa_entry,couleur_droite_hexa_entry):
 			entry.pack(side=tk.LEFT)
@@ -455,7 +455,7 @@ class App:
 			# On cree le cube qui sera celui de la previsualisation
 			if(self.grille.is_in_grille(coordsEvent)):
 				self.cubeTest = Cube.Cube(self.canv,self.grille,coordsGrille,0,pcouleur=("#f2e6e3","#f2e6e3","#f2e6e3")) # On place le cube si l'utilisateur entre dans la grille
-				self.cubeTest.desactiver(self.canv) # on met le cube et disabled pour qu'on ne puisse par cliquer dessus
+				self.cubeTest.desactiver(self.canv) # on met et disable le cube pour qu'on ne puisse par cliquer dessus
 				self.precoords = coordsEvent
 		else:
 			currentFace = self.canv.find_withtag("current") # id du polygone sur lequel on est
