@@ -152,6 +152,26 @@ class App:
 	def deplacerCube(self,event,plus_x = 0,plus_y = 0):
 		''' Fonction pour deplacer un cube en fonction des fleches directionnelles, les parametres
 			plus_x et plus_y indiquent ou sera placé le cube apres la fonction '''
+		if(plus_y == 1):
+			self.zone_dessin.itemconfig(self.fleche_haut,fill = "black")
+			self.zone_dessin.itemconfig(self.fleche_bas,fill = "red")
+			self.zone_dessin.itemconfig(self.fleche_gauche,fill = "black")
+			self.zone_dessin.itemconfig(self.fleche_droite,fill = "black")
+		elif(plus_y == -1):
+			self.zone_dessin.itemconfig(self.fleche_haut,fill = "red")
+			self.zone_dessin.itemconfig(self.fleche_bas,fill = "black")
+			self.zone_dessin.itemconfig(self.fleche_gauche,fill = "black")
+			self.zone_dessin.itemconfig(self.fleche_droite,fill = "black")
+		elif(plus_x == 1):
+			self.zone_dessin.itemconfig(self.fleche_haut,fill = "black")
+			self.zone_dessin.itemconfig(self.fleche_bas,fill = "black")
+			self.zone_dessin.itemconfig(self.fleche_gauche,fill = "black")
+			self.zone_dessin.itemconfig(self.fleche_droite,fill = "red")
+		elif(plus_x == -1):
+			self.zone_dessin.itemconfig(self.fleche_haut,fill = "black")
+			self.zone_dessin.itemconfig(self.fleche_bas,fill = "black")
+			self.zone_dessin.itemconfig(self.fleche_gauche,fill = "red")
+			self.zone_dessin.itemconfig(self.fleche_droite,fill = "black")
 		h = self.cube_select.h
 		x,y = self.grille.canvasToGrille(self.cube_select.coords) # x et y sont les positions 3D du cube, nous prenons alors en compte la hauteur
 		x += h
@@ -168,9 +188,11 @@ class App:
 			# si oui, alors on place le cube au dessus du plus haut cube
 			h = max(self.DICO[(x2,y2)])
 			self.cube_select = self.placerCube((x2,y2),h+1)
+			self.pos_cube.set("position | x:"+str(int(x2))+" y:"+str(int(y2))+" hauteur: "+str(h+1))
 		else:
 			# sinon, on le place à la hauteur 0
 			self.cube_select = self.placerCube((x2,y2),0)
+			self.pos_cube.set("position | x:"+str(int(x2))+" y:"+str(int(y2))+" hauteur: 0")
 		# On reselectionne le cube, parceque il a ete supprime
 		self.cube_select.selectionCube(self.canv)
 
@@ -188,13 +210,15 @@ class App:
 
 		currentCoords = (event.x,event.y)
 		convertedCoords = self.grille.canvasToGrille(currentCoords)
-
 		faceCliquee = self.canv.find_withtag("current") # id du polygone sur lequel on a clique
 
 		if(self.canv.type(faceCliquee) == "polygon"): # si on a bien clique sur un polygone (une face de cube)
 			idCube = int(self.canv.gettags(faceCliquee)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
 			cube = self.rechercherCube(idCube)
 			if(cube != 0):
+				coords_cube_grille = self.grille.canvasToGrille(cube.coords)
+				self.nom_cube.set("cube n°"+str(idCube))
+				self.pos_cube.set("position | x:"+str(int(coords_cube_grille[0]+cube.h))+" y:"+str(int(coords_cube_grille[1]+cube.h))+" hauteur: "+str(cube.h))
 				cube.selectionCube(self.canv)
 				self.cube_select = cube
 				# On bind les fleches directionnelles a la fonction deplacerCube
@@ -636,9 +660,25 @@ class App:
 		# Root
 		self.root = tk.Tk()
 
+		self.nom_cube = tk.StringVar()
+		self.nom_cube.set("Bienvenue")
+		self.pos_cube = tk.StringVar()
+		fenetre = tk.LabelFrame(self.root, text="Infos", padx=20, pady=20)
+		self.zone_dessin = tk.Canvas(fenetre,width=100,height=50,bd=8)
+		self.fleche_haut = self.zone_dessin.create_line(60,30,60,15,fill="black",width=10, arrow="last")
+		self.fleche_bas = self.zone_dessin.create_line(60,60,60,45,fill="black",width=10, arrow="first")
+		self.fleche_gauche = self.zone_dessin.create_line(60,38,30,38,fill="black",width=10, arrow="last")
+		self.fleche_droite = self.zone_dessin.create_line(60,38,90,38,fill="black",width=10, arrow="last")
+		self.zone_dessin.pack()
+		fenetre.pack(fill="both", expand="yes")
+
+ 
+		tk.Label(fenetre, textvariable=self.nom_cube).pack()
+		tk.Label(fenetre, textvariable=self.pos_cube).pack()
+
 		# Menus
 
-		self.menuFrame = tk.Frame(self.root,bg="red") # ne pas oublier d'enlever le bg
+		self.menuFrame = tk.Frame(self.root) # ne pas oublier d'enlever le bg
 		self.menuFrame.pack(side=tk.TOP,expand=True,fill=tk.X,anchor="n")
 
 		self.bottomFrame = tk.Frame(self.root,bg="blue")

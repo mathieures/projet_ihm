@@ -100,8 +100,3 @@ class Cube:
 	def priorite(self,pcanvas):
 		# fonction pour rendre le cube visible au premier plan
 		pcanvas.tag_raise("cube_"+str(self.__haut))
-
-	def changeCoords(self,pcanvas,pcoords):
-		pcanvas.coords(self.__haut, pcoords[0],pcoords[1])
-		pcanvas.coords(self.__gauche, pcoords[0],pcoords[1])
-		pcanvas.coords(self.__droite, pcoords[0],pcoords[1])
