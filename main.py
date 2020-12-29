@@ -518,7 +518,7 @@ class App:
 			nouvelle_couleur[1] = self.__stringvar_couleur_gauche.get()
 			nouvelle_couleur[2] = self.__stringvar_couleur_droite.get()
 		# dans tous les cas, on change la couleur du cube
-		self.__cube_couleur.changerCouleur(self.__canvas_couleur,nouvelle_couleur)
+		self.__cube_couleur.changerCouleur(nouvelle_couleur)
 		# pour chaque face, on modifie l'entry correspondante, en fonction du code en hexadecimal
 		for i in range(3):
 			self.__couleur_haut_entry_RVB[i].delete(0,tk.END)
