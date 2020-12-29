@@ -563,7 +563,7 @@ class App:
 			nouvelle_couleur[0] = self.__stringvar_couleur_haut.get()
 			nouvelle_couleur[2] = self.__stringvar_couleur_droite.get()
 		# on change la couleur du cube
-		self.__cube_couleur.changerCouleur(self.__canvas_couleur,nouvelle_couleur)
+		self.__cube_couleur.changerCouleur(nouvelle_couleur)
 		# on modifie les entries
 		for i in range(3):
 			self.__couleur_gauche_entry_RVB[i].delete(0,tk.END)
@@ -606,7 +606,7 @@ class App:
 			nouvelle_couleur[1] = self.__stringvar_couleur_gauche.get()
 		
 		# on change la couleur du cube
-		self.__cube_couleur.changerCouleur(self.__canvas_couleur,nouvelle_couleur)
+		self.__cube_couleur.changerCouleur(nouvelle_couleur)
 		# on modifie les entries
 		for i in range(3):
 			self.__couleur_droite_entry_RVB[i].delete(0,tk.END)
@@ -690,6 +690,9 @@ class App:
 		if(self.cubeTest):
 			self.cubeTest.priorite() # a changer par inserer
 
+	def quitter(self):
+		self.root.quit()
+
 
 	# Constructeur de l'application
 
@@ -698,6 +701,7 @@ class App:
 		# Root
 		self.root = tk.Tk()
 
+		# Affichage des informations
 		self.nom_cube = tk.StringVar()
 		self.nom_cube.set("Bienvenue")
 		self.pos_cube = tk.StringVar()
@@ -708,7 +712,7 @@ class App:
 		self.fleche_gauche = self.zone_dessin.create_line(60,38,30,38,fill="black",width=10, arrow="last")
 		self.fleche_droite = self.zone_dessin.create_line(60,38,90,38,fill="black",width=10, arrow="last")
 		self.zone_dessin.pack()
-		fenetre.pack(fill="both", expand="yes")
+		fenetre.pack(fill="both", expand="yes",side="left")
 
  
 		tk.Label(fenetre, textvariable=self.nom_cube).pack()
@@ -735,6 +739,8 @@ class App:
 		self.visualiser = tk.BooleanVar(value=False)
 		self.deroulFichier.add_checkbutton(label="Visualiser", variable=self.visualiser)
 		self.deroulFichier.add_command(label="Couleur", command=self.ouvrirFenetreCouleur)
+		self.deroulFichier.add_separator()
+		self.deroulFichier.add_command(label="Quitter", command=self.quitter)
 
 		# on desactive les options annuler et sauver
 		self.deroulFichier.entryconfigure(2,state="disabled")
@@ -750,12 +756,9 @@ class App:
 
 		# Menu aide
 
-		self.menuAide = tk.Menubutton(self.menuFrame,text="Aide",underline=0,relief="raised")
-
-		self.derouleAide = tk.Menu(self.menuAide,tearoff=False)
-
-		self.menuAide.config(menu=self.derouleAide)
-		self.menuAide.pack(side=tk.RIGHT)
+		self.menuAide = tk.Menu(self.menuFichier,tearoff=False)
+		self.menuAide.add_command(label="Aide", command=self.nouveauFichier)
+		#self.menuAide.pack(side=tk.RIGHT)
 
 		# Canvas
 
