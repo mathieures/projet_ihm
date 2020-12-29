@@ -23,6 +23,10 @@ class Cube:
 	def id(self):
 		return self.__id
 
+	@property
+	def numero(self):
+		return self.__numero
+
 	def _get_h(self):
 		return self.__h
 	def _set_h(self,ph):
@@ -41,13 +45,14 @@ class Cube:
 	
 
 	#constructeur
-	def __init__(self,pcanvas,pgrille,pcoordsGrille,phauteur=0,pcouleur=(__couleur_haut,__couleur_gauche,__couleur_droite)):
+	def __init__(self,pcanvas,pgrille,pcoordsGrille,phauteur=0,pcouleur=(__couleur_haut,__couleur_gauche,__couleur_droite), pnumero=0):
 		# pcoordsGrille est un point de la grille, (hauteur 0 !!)
 
 		self.__canvas = pcanvas
 		self.__grille = pgrille
 		self.__coords = pgrille.grilleToCanvas(pcoordsGrille)
 		self.__h = phauteur
+		self.__numero = pnumero
 
 		self.dessiner(pcouleur)
 

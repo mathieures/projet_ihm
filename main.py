@@ -15,6 +15,7 @@ class App:
 	COULEUR_MAX = 16777215 # la couleur #ffffff en decimal
 
 	cube_select = None
+	NB_CUBES = 0 # Pour savoir combien il y a de cubes dans la scene, et pour leur attribuer des numero
 	precoords = () # Tuple pour memoriser les coordonnees precedentes pour le previsualisation
 
 	# Exportation en .SVG
@@ -144,6 +145,8 @@ class App:
 
 
 	def nouveauFichier(self):
+
+		self.NB_CUBES = 0
 		# on efface tous les cubes
 		for cube in self.CUBES:
 			cube.effacer()
@@ -274,7 +277,7 @@ class App:
 			cube = self.rechercherCube(idCube)
 			if(cube != 0):
 				coords_cube_grille = self.grille.canvasToGrille(cube.coords)
-				self.nom_cube.set("cube n°"+str(idCube))
+				self.nom_cube.set("cube n°"+str(cube.numero))
 				self.pos_cube.set("position | x:"+str(int(coords_cube_grille[0]+cube.h))+" y:"+str(int(coords_cube_grille[1]+cube.h))+" hauteur: "+str(cube.h))
 				cube.selectionCube()
 				self.cube_select = cube
@@ -291,6 +294,7 @@ class App:
 			self.deroulFichier.entryconfigure(2,state="disabled") # option Sauver
 			self.deroulFichier.entryconfigure(3,state="disabled") # option Annuler
 		if len(self.CUBES) > 0:
+			self.NB_CUBES -= 1 #Un cube en moins dans la scene
 			cube = self.CUBES[-1]
 			coordsGrille = self.grille.canvasToGrille(cube.coords)
 			self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)].pop()
@@ -313,7 +317,9 @@ class App:
 		coordsGrille = (coords3D[0]-phauteur,coords3D[1]-phauteur)
 		if not(pcouleur):
 			pcouleur = self.__couleur_cube
-		cube = Cube.Cube(self.canv,self.grille,coordsGrille,phauteur,pcouleur)
+
+		self.NB_CUBES += 1 #Un cube en plus dans la scene
+		cube = Cube.Cube(self.canv,self.grille,coordsGrille,phauteur,pcouleur, self.NB_CUBES)
 		self.insererDansDisplayList(cube)
 
 
