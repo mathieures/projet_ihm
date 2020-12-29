@@ -15,7 +15,7 @@ class App:
 	COULEUR_MAX = 16777215 # la couleur #ffffff en decimal
 
 	cube_select = None
-	NB_CUBES = 0 # Pour savoir combien il y a de cubes dans la scene, et pour leur attribuer des numero
+	NB_CUBES = 0 # Pour savoir combien il y a de cubes dans la scene, et pour leur attribuer des numeros
 	precoords = () # Tuple pour memoriser les coordonnees precedentes pour le previsualisation
 
 	# Exportation en .SVG
@@ -147,6 +147,7 @@ class App:
 	def nouveauFichier(self):
 
 		self.NB_CUBES = 0
+		self.canv.itemconfigure(self.texte_cubes, text="Nombre de cubes dans la scene: "+str(self.NB_CUBES))
 		# on efface tous les cubes
 		for cube in self.CUBES:
 			cube.effacer()
@@ -295,6 +296,7 @@ class App:
 			self.deroulFichier.entryconfigure(3,state="disabled") # option Annuler
 		if len(self.CUBES) > 0:
 			self.NB_CUBES -= 1 #Un cube en moins dans la scene
+			self.canv.itemconfigure(self.texte_cubes, text="Nombre de cubes dans la scene: "+str(self.NB_CUBES))
 			cube = self.CUBES[-1]
 			coordsGrille = self.grille.canvasToGrille(cube.coords)
 			self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)].pop()
@@ -319,6 +321,8 @@ class App:
 			pcouleur = self.__couleur_cube
 
 		self.NB_CUBES += 1 #Un cube en plus dans la scene
+		self.canv.itemconfigure(self.texte_cubes, text="Nombre de cubes dans la scene: "+str(self.NB_CUBES))
+
 		cube = Cube.Cube(self.canv,self.grille,coordsGrille,phauteur,pcouleur, self.NB_CUBES)
 		self.insererDansDisplayList(cube)
 
@@ -756,6 +760,7 @@ class App:
 		# Canvas
 
 		self.canv = tk.Canvas(self.root,width=500,height=500,bg="white")
+		self.texte_cubes = self.canv.create_text(390,480,fill="black",text="Nombre de cubes dans la scene: "+str(self.NB_CUBES))
 		self.canv.bind("<Motion>",self.onMotion)
 		self.canv.bind("<Button-1>",self.onClick)
 		self.canv.bind("<Button-3>",self.onCubeClick)
