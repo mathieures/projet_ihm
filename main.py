@@ -3,8 +3,6 @@ import Grille
 import Cube
 from tkinter import filedialog,messagebox
 
-import time # a supp
-
 class App:
 
 	# DICO : contient la position 3D de tous les cubes sous la forme DICO[(x,y)] = [hauteur_1,hauteur_2...]
@@ -146,6 +144,7 @@ class App:
 	def nouveauFichier(self):
 
 		self.NB_CUBES = 0
+		self.cacherInfos() # Il n'y a plus de cubes donc plus d'informations sur un cube
 		self.canv.itemconfigure(self.texte_cubes, text="Nombre de cubes dans la scene: "+str(self.NB_CUBES))
 		# on efface tous les cubes
 		for cube in self.CUBES:
@@ -188,7 +187,7 @@ class App:
 				return(cube)
 		return(None)
 
-	def moveCube(self,pcube,pcoords3D):
+	def translationCube(self,pcube,pcoords3D):
 		"""Deplace un cube a la position (tuple de longueur 3) passee en parametre, inconditionnellement."""
 		prec_x,prec_y = self.grille.closestPoint(pcube.coordsTo3D())
 
@@ -245,18 +244,19 @@ class App:
 			# si oui, alors on deplace le cube au dessus du plus haut cube
 			h = max(self.DICO[(x2,y2)])
 
-			self.moveCube(self.cube_select,(x2,y2,h+1))
+			self.translationCube(self.cube_select,(x2,y2,h+1))
 			
 			self.pos_cube.set("position | x:"+str(int(x2))+" y:"+str(int(y2))+" hauteur: "+str(h+1))
 		else:
 			# sinon, on le deplace à la hauteur 0
-			self.moveCube(self.cube_select,(x2,y2,0))
+			self.translationCube(self.cube_select,(x2,y2,0))
 			
 			self.pos_cube.set("position | x:"+str(int(x2))+" y:"+str(int(y2))+" hauteur: 0")
 
 	def onCubeClick(self,event):
 		''' Fonction pour la selection des cubes '''
 		if(self.cube_select != None):
+			self.cacherInfos()
 			# On deselectionne le cube d'avant
 			self.cube_select.deselectionCube()
 			# On supprime les bindings des fleches directionnelles
@@ -274,6 +274,7 @@ class App:
 			idCube = int(self.canv.gettags(faceCliquee)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
 			cube = self.rechercherCube(idCube)
 			if(cube != 0):
+				self.montrerInfos()
 				coords_cube_grille = self.grille.canvasToGrille(cube.coords)
 				self.nom_cube.set("cube n°"+str(cube.numero))
 				self.pos_cube.set("position | x:"+str(int(coords_cube_grille[0]+cube.h))+" y:"+str(int(coords_cube_grille[1]+cube.h))+" hauteur: "+str(cube.h))
@@ -289,6 +290,7 @@ class App:
 		"""Annule le dernier placement de cube."""
 		# le parametre event est obligatoire pour etre bind
 		if len(self.CUBES) == 1:
+			self.cacherInfos() # On enleve le dernier cube donc plus d'informations sur un cube
 			self.deroulFichier.entryconfigure(2,state="disabled") # option Sauver
 			self.deroulFichier.entryconfigure(3,state="disabled") # option Annuler
 		if len(self.CUBES) > 0:
@@ -301,8 +303,21 @@ class App:
 				del self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)]
 			self.CUBES[-1].effacer()
 			self.CUBES.pop()
-		else:
-			print("plus de cubes dans la liste")
+
+	def supprimerCube(self):
+		if len(self.CUBES) == 1:
+			self.deroulFichier.entryconfigure(2,state="disabled") # option Sauver
+			self.deroulFichier.entryconfigure(3,state="disabled") # option Annuler
+		if len(self.CUBES) > 0:
+			self.NB_CUBES -= 1 #Un cube en moins dans la scene
+			self.canv.itemconfigure(self.texte_cubes, text="Nombre de cubes dans la scene: "+str(self.NB_CUBES))
+			cube = self.cube_select
+			coordsGrille = self.grille.canvasToGrille(cube.coords)
+			self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)].pop()
+			if(self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)] == []):
+				del self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)]
+			cube.effacer()
+			self.CUBES.remove(cube)
 
 	def placerCube(self,pcoordsGrille,phauteur,pcouleur=None):
 		"""
@@ -329,7 +344,7 @@ class App:
 		self.deroulFichier.entryconfigure(2,state="normal")
 		self.deroulFichier.entryconfigure(3,state="normal")
 		self.deroulFichier.entryconfigure(4,state="normal")
-		return cube # ne sert a rien pour l'instant, mais au cas ou
+		return cube
 
 	def placerCubeHaut(self,pposition3D):
 		"""Place un cube en haut de la position 3D passee en parametre (x,y,hauteur)"""
@@ -690,6 +705,39 @@ class App:
 	def quitter(self):
 		self.root.quit()
 
+	def montrerInfos(self):
+		self.info_nom.pack()
+		self.info_pos.pack()
+		self.zone_dessin.pack()
+		self.supprimer_bouton.pack()
+
+	def cacherInfos(self):
+		self.info_nom.pack_forget()
+		self.info_pos.pack_forget()
+		self.zone_dessin.pack_forget()
+		self.supprimer_bouton.pack_forget()
+
+	def initInfos(self):
+		# Affichage des informations
+		self.nom_cube = tk.StringVar()
+		self.pos_cube = tk.StringVar()
+		self.zone_dessin = tk.Canvas(self.fenetre,width=100,height=50,bd=8)
+		self.fleche_haut = self.zone_dessin.create_line(60,30,60,15,fill="black",width=10, arrow="last")
+		self.fleche_bas = self.zone_dessin.create_line(60,60,60,45,fill="black",width=10, arrow="first")
+		self.fleche_gauche = self.zone_dessin.create_line(60,38,30,38,fill="black",width=10, arrow="last")
+		self.fleche_droite = self.zone_dessin.create_line(60,38,90,38,fill="black",width=10, arrow="last")
+		self.zone_dessin.pack()
+
+		self.info_nom = tk.Label(self.fenetre, textvariable=self.nom_cube)
+		self.info_pos = tk.Label(self.fenetre, textvariable=self.pos_cube)
+		self.info_nom.pack()
+		self.info_pos.pack()
+
+		self.supprimer_bouton = tk.Button(self.fenetre,text="Supprimer ce cube",command=self.supprimerCube)
+		self.supprimer_bouton.pack()
+
+		self.fenetre.pack(fill="both", expand="yes",side="left")
+
 
 	# Constructeur de l'application
 
@@ -698,26 +746,14 @@ class App:
 		# Root
 		self.root = tk.Tk()
 
-		# Affichage des informations
-		self.nom_cube = tk.StringVar()
-		self.nom_cube.set("Bienvenue")
-		self.pos_cube = tk.StringVar()
-		fenetre = tk.LabelFrame(self.root, text="Infos", padx=20, pady=20)
-		self.zone_dessin = tk.Canvas(fenetre,width=100,height=50,bd=8)
-		self.fleche_haut = self.zone_dessin.create_line(60,30,60,15,fill="black",width=10, arrow="last")
-		self.fleche_bas = self.zone_dessin.create_line(60,60,60,45,fill="black",width=10, arrow="first")
-		self.fleche_gauche = self.zone_dessin.create_line(60,38,30,38,fill="black",width=10, arrow="last")
-		self.fleche_droite = self.zone_dessin.create_line(60,38,90,38,fill="black",width=10, arrow="last")
-		self.zone_dessin.pack()
-		fenetre.pack(fill="both", expand="yes",side="left")
-
- 
-		tk.Label(fenetre, textvariable=self.nom_cube).pack()
-		tk.Label(fenetre, textvariable=self.pos_cube).pack()
+		# LabelFrame qui contiendra les informations d'un cube lorsqu'on clique dessus
+		self.fenetre = tk.LabelFrame(self.root, text="Infos", padx=20, pady=20)
+		self.initInfos()
+		self.cacherInfos()
 
 		# Menus
 
-		self.menuFrame = tk.Frame(self.root) # ne pas oublier d'enlever le bg
+		self.menuFrame = tk.Frame(self.root)
 		self.menuFrame.pack(side=tk.TOP,expand=True,fill=tk.X,anchor="n")
 
 		self.bottomFrame = tk.Frame(self.root,bg="blue")
@@ -770,7 +806,6 @@ class App:
 		# cube1 = Cube.Cube(self.canv,self.grille,(1,1))
 
 		self.canv.pack()
-
 
 		# Fin
 
