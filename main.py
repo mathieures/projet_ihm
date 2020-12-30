@@ -74,16 +74,15 @@ class App:
 				f.write("<svg viewBox=" + "\"0 0 " + str(self.canv.cget("width")) + " " + str(self.canv.cget("height")) + "\" " + "xmlns=\"http://www.w3.org/2000/svg\">\n")
 				self.dessinerGrilleSVG(f)
 				# pas optimise, mais facultatif
-				liste = self.canv.find_all()[self.grille.taille_x+self.grille.taille_y+2:] # a partir du nb de lignes+1 jusqu'a la fin : les faces des cubes
+				liste = self.canv.find_all()[self.grille.taille_x+self.grille.taille_y+3:] # a partir du nb de lignes+1 jusqu'a la fin : les faces des cubes
 				# attention : les id commencent a 1
 				for i in range(len(liste)):
-					if i%3 == 0: # verifier si ça fonctionne toujours avec les pixmaps (autres types de polygones peut-etre ?)
+					if (i%3 == 0) and (liste[i] != self.cubeTest.id): # verifier si ça fonctionne toujours avec les pixmaps (autres types de polygones peut-etre ?)
 						# on a un id de cube, il nous faut l'objet pour avoir ses coordonnees
 						for c in self.CUBES:
-							print("c.id :",c.id,"liste[i] :",liste[i])
+							# print("c.id :",c.id,"; liste[i] :",liste[i])
 							if c.id == liste[i]:
 								cube = c
-								print("	cube id trouvé :",cube.id,"; coords :",cube.coords)
 								break
 						# cube est le cube correspondant a l'id i
 						coords2D = self.grille.canvasToGrille(cube.coords)
@@ -165,9 +164,7 @@ class App:
 				for cube in self.CUBES:
 					coords3D = cube.coordsTo3D()
 					couleur_faces = cube.couleur
-					f.write(f"{coords3D[0]},{coords3D[1]},{cube.h},{couleur_faces[0]},{couleur_faces[1]},{couleur_faces[2]}\n")
-					# f.write()
-					# f.write(str(pos_cube[0]) + "," + str(pos_cube[1]) + " ")
+					f.write(f"{int(coords3D[0])},{int(coords3D[1])},{cube.h},{couleur_faces[0]},{couleur_faces[1]},{couleur_faces[2]}\n")
 		except: # Si il y a une erreur, le dire a l'utilisateur, (gerer les differentes erreurs apres !!!!)
 			messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du fichier.")
 			# attention : appele aussi quand l'utilisateur clique sur Annuler
@@ -193,7 +190,7 @@ class App:
 
 	def moveCube(self,pcube,pcoords3D):
 		"""Deplace un cube a la position (tuple de longueur 3) passee en parametre, inconditionnellement."""
-		prec_x,prec_y = pcube.coordsTo3D() # normalement, pas besoin de chercher le point le plus proche
+		prec_x,prec_y = self.grille.closestPoint(pcube.coordsTo3D())
 
 		x,y,h = pcoords3D
 
