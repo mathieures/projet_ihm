@@ -762,23 +762,64 @@ class App:
 
 	def config(self):
 		# Creation de la fenetre pour configurer la scene
-		self.fenetreConfig = tk.Toplevel(self.root)
+		self.fenetre_config = tk.Toplevel(self.root)
 
-		tk.Label(self.fenetreConfig, text="Bienvenue !").pack()
+		tk.Label(self.fenetre_config, text="Bienvenue !").pack()
+		tk.Label(self.fenetre_config, text="Veuillez paramétrer votre scène").pack()
 
-		labelConfig = tk.LabelFrame(self.fenetreConfig, text='Configuration du canvas')
-		s = tk.Spinbox(labelConfig, from_=100, to=1000).pack()
-		self.canvas_hauteur = tk.Label(labelConfig, text="Hauteur: ").pack(side='left')
-		s = tk.Spinbox(labelConfig, from_=100, to=1000).pack()
-		self.canvas_largeur = tk.Label(labelConfig, text="Largeur: ").pack(side='left')
-		labelConfig.pack()
+		# Config du canvas
+		label_config = tk.LabelFrame(self.fenetre_config, text='Configuration du canvas')
+		self.hauteur = tk.Spinbox(label_config, from_=100, to=1000)
+		self.hauteur.grid(column=1, row=0, ipadx=5, pady=5)
 
-		tk.Button(self.fenetreConfig,text='Ok', command=self.initScene).pack()
+		label_hauteur = tk.Label(label_config, text="Hauteur: ")
+		label_hauteur.grid(column=0, row=0, ipadx=5, pady=5)
 
-		self.fenetreConfig.protocol("WM_DELETE_WINDOW", self.quitter) # pour gerer la fermeture avec la croix rouge et alt-f4
+		self.largeur = tk.Spinbox(label_config, from_=100, to=1000)
+		self.largeur.grid(column=1, row=1, ipadx=5, pady=5)
+
+		label_largeur = tk.Label(label_config, text="Largeur: ")
+		label_largeur.grid(column=0, row=1, ipadx=5, pady=5)
+
+		label_config.pack(padx=20)
+
+		# Config de la grille
+		label_grille = tk.LabelFrame(self.fenetre_config, text='Configuration de la grille')
+		self.nb_cases_x = tk.Spinbox(label_grille, from_=1, to=1000)
+		self.nb_cases_x.grid(column=1, row=0, ipadx=5, pady=5)
+		label_nbcases_x = tk.Label(label_grille, text="Nombre de cases en x: ")
+		label_nbcases_x.grid(column=0, row=0, ipadx=5, pady=5)
+
+		self.nb_cases_y = tk.Spinbox(label_grille, from_=1, to=1000)
+		self.nb_cases_y.grid(column=1, row=1, ipadx=5, pady=5)
+		label_nbcases_y = tk.Label(label_grille, text="Nombre de cases en y: ")
+		label_nbcases_y.grid(column=0, row=1, ipadx=5, pady=5)
+
+		label_grille.pack(pady=20, padx=20)
+
+		# Config de la taille d'un cube
+		label_cube = tk.LabelFrame(self.fenetre_config, text='Configuration des cubes')
+		self.taille_cube = tk.Spinbox(label_cube, from_=10, to=1000)
+		self.taille_cube.grid(column=1, row=0, ipadx=5, pady=5)
+		label_taille = tk.Label(label_cube, text="Choisissez la taille des cubes: ")
+		label_taille.grid(column=0, row=0, ipadx=5, pady=5)
+
+		label_cube.pack(padx=20)
+
+		# Construction de la scene avec les parametres choisis
+		tk.Button(self.fenetre_config,text='Construire la scene', command=self.initScene).pack(pady=10)
+
+		self.fenetre_config.protocol("WM_DELETE_WINDOW", self.quitter) # pour gerer la fermeture avec la croix rouge et alt-f4
 
 	def initScene(self):
-		self.fenetreConfig.destroy()
+		# Stockage des parametres dans des variables
+		self.canvas_l = int(self.largeur.get())
+		self.canvas_h = int(self.hauteur.get())
+		self.taille_y = int(self.nb_cases_y.get())
+		self.taille_x = int(self.nb_cases_x.get())
+		self.definition = int(self.taille_cube.get())
+
+		self.fenetre_config.destroy()
 		self.root.deiconify()
 
 		# LabelFrame qui contiendra les informations d'un cube lorsqu'on clique dessus
@@ -835,15 +876,14 @@ class App:
 
 		# Canvas
 
-		self.canv = tk.Canvas(self.root,width=500,height=500,bg="white")
+		self.canv = tk.Canvas(self.root,width=self.canvas_l,height=self.canvas_h,bg="white")
 		self.texte_cubes = self.canv.create_text(390,480,fill="black",text="Nombre de cubes dans la scene: "+str(self.NB_CUBES))
 		self.canv.bind("<Motion>",self.onMotion)
 		self.canv.bind("<Button-1>",self.onClick)
 		self.canv.bind("<Button-3>",self.onCubeClick)
 
-		self.grille = Grille.Grille(self.canv)
+		self.grille = Grille.Grille(self.canv,pdefinition=self.definition,ptaille_x=self.taille_x,ptaille_y=self.taille_y)
 		self.cubeTest = None
-		# cube1 = Cube.Cube(self.canv,self.grille,(1,1))
 
 		self.canv.pack()
 
