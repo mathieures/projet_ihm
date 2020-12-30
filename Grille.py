@@ -27,22 +27,22 @@ class Grille:
 		else:
 			self.__origine = porigine
 			
-		print("origine :",self.origine,"; definition :",self.definition)
+		print("origine :",self.__origine,"; definition :",self.definition)
 		# dessin de la grille
 		self.dessineGrille(pcanvas)
 
 	def dessineGrille(self,pcanvas):
-		x = self.origine[0]
-		y = self.origine[1]
+		x = self.__origine[0]
+		y = self.__origine[1]
 		d = self.definition
-		for i in range(self.taille_x+1):
-			pcanvas.create_line(x,y,x+d*self.taille_y,y+(d*self.taille_y/2))
+		for i in range(self.taille_y+1):
+			pcanvas.create_line(x,y,x+d*self.taille_x,y+(d*self.taille_x/2))
 			x -= d
 			y += d/2
-		x = self.origine[0]
-		y = self.origine[1]
-		for j in range(self.taille_y+1):
-			pcanvas.create_line(x,y,x-d*self.taille_x,y+(d*self.taille_x/2))
+		x = self.__origine[0]
+		y = self.__origine[1]
+		for j in range(self.taille_x+1):
+			pcanvas.create_line(x,y,x-d*self.taille_y,y+(d*self.taille_y/2))
 			x += d
 			y += d/2
 
