@@ -142,9 +142,7 @@ class App:
 
 
 	def nouveauFichier(self):
-
 		self.NB_CUBES = 0
-		self.cacherInfos() # Il n'y a plus de cubes donc plus d'informations sur un cube
 		self.canv.itemconfigure(self.texte_cubes, text="Nombre de cubes dans la scene: "+str(self.NB_CUBES))
 		# on efface tous les cubes
 		for cube in self.CUBES:
