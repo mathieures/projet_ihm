@@ -294,8 +294,9 @@ class App:
 	def supprimerCube(self,pcube=None):
 		# si c'est le dernier cube present
 		if len(self.CUBES) == 1:
-			self.deroulFichier.entryconfigure(2,state="disabled") # option Sauver
-			self.deroulFichier.entryconfigure(3,state="disabled") # option Annuler
+			self.deroulFichier.entryconfigure(2,state="disabled") # option Exporter
+			self.deroulFichier.entryconfigure(3,state="disabled") # option Sauver
+			self.deroulEdition.entryconfigure(2,state="disabled")
 		# vu qu'on en passe un en parametre, on est sur qu'il y en a au moins un
 		self.NB_CUBES -= 1 #Un cube en moins dans la scene
 		self.canv.itemconfigure(self.texte_cubes, text="Nombre de cubes dans la scene: "+str(self.NB_CUBES))
@@ -334,7 +335,7 @@ class App:
 		# on active les options d'exportation, de sauvegarde et d'annulation
 		self.deroulFichier.entryconfigure(2,state="normal")
 		self.deroulFichier.entryconfigure(3,state="normal")
-		self.deroulFichier.entryconfigure(4,state="normal")
+		self.deroulEdition.entryconfigure(2,state="normal")
 		return cube
 
 	def placerCubeHaut(self,pposition3D):
@@ -699,7 +700,8 @@ class App:
 			self.cubeTest.priorite() # a changer par inserer
 
 	def quitter(self):
-		self.root.quit()
+		if messagebox.askyesno('Quit', 'Êtes-vous sûr de vouloir quitter?'):
+			self.root.quit()
 
 	def montrerInfos(self):
 		# Pour rendre les infos visibles
@@ -758,12 +760,26 @@ class App:
 	def ouvrirDocumentation(self):
 		webbrowser.open('doc.html')
 
-	# Constructeur de l'application
+	def config(self):
+		# Creation de la fenetre pour configurer la scene
+		self.fenetreConfig = tk.Toplevel(self.root)
 
-	def __init__(self):
+		tk.Label(self.fenetreConfig, text="Bienvenue !").pack()
 
-		# Root
-		self.root = tk.Tk()
+		labelConfig = tk.LabelFrame(self.fenetreConfig, text='Configuration du canvas')
+		s = tk.Spinbox(labelConfig, from_=100, to=1000).pack()
+		self.canvas_hauteur = tk.Label(labelConfig, text="Hauteur: ").pack(side='left')
+		s = tk.Spinbox(labelConfig, from_=100, to=1000).pack()
+		self.canvas_largeur = tk.Label(labelConfig, text="Largeur: ").pack(side='left')
+		labelConfig.pack()
+
+		tk.Button(self.fenetreConfig,text='Ok', command=self.initScene).pack()
+
+		self.fenetreConfig.protocol("WM_DELETE_WINDOW", self.quitter) # pour gerer la fermeture avec la croix rouge et alt-f4
+
+	def initScene(self):
+		self.fenetreConfig.destroy()
+		self.root.deiconify()
 
 		# LabelFrame qui contiendra les informations d'un cube lorsqu'on clique dessus
 		self.fenetre = tk.LabelFrame(self.root, text="Infos", padx=20, pady=20)
@@ -775,9 +791,6 @@ class App:
 		self.menuFrame = tk.Frame(self.root)
 		self.menuFrame.pack(side=tk.TOP,expand=True,fill=tk.X,anchor="n")
 
-		self.bottomFrame = tk.Frame(self.root,bg="blue")
-		self.bottomFrame.pack(side=tk.BOTTOM,expand=True,fill=tk.X,anchor="s")
-
 		# Menu fichier
 		self.menuFichier = tk.Menubutton(self.menuFrame,text="Fichier",underline=0,relief="raised")
 
@@ -786,25 +799,31 @@ class App:
 		self.deroulFichier.add_command(label="Charger", command=self.ouvrirFichier)
 		self.deroulFichier.add_command(label="Exporter", command=self.sauverSVG)
 		self.deroulFichier.add_command(label="Sauver", command=self.sauverFichier)
-		self.deroulFichier.add_command(label="Annuler", command=self.annulerDernierCube)
-		self.root.bind("<Control-z>", self.annulerDernierCube)
-		self.visualiser = tk.BooleanVar(value=True)
-		self.deroulFichier.add_checkbutton(label="Visualiser", variable=self.visualiser)
-		self.deroulFichier.add_command(label="Couleur", command=self.ouvrirFenetreCouleur)
 		self.deroulFichier.add_separator()
 		self.deroulFichier.add_command(label="Quitter", command=self.quitter)
 
-		# on desactive les options annuler et sauver
+		# Menu edition
+		self.menuEdition = tk.Menubutton(self.menuFrame,text="Edition",underline=0,relief="raised")
+
+		self.deroulEdition = tk.Menu(self.menuEdition, tearoff=False)
+		self.visualiser = tk.BooleanVar(value=True)
+		self.deroulEdition.add_checkbutton(label="Visualiser", variable=self.visualiser)
+		self.deroulEdition.add_command(label="Couleur", command=self.ouvrirFenetreCouleur)
+		self.deroulEdition.add_command(label="Annuler", command=self.annulerDernierCube)
+		self.root.bind("<Control-z>", self.annulerDernierCube)
+
+		# on desactive les options annuler, sauver et exporter
 		self.deroulFichier.entryconfigure(2,state="disabled")
 		self.deroulFichier.entryconfigure(3,state="disabled")
-		self.deroulFichier.entryconfigure(4,state="disabled")
+		self.deroulEdition.entryconfigure(2,state="disabled")
 
-		# self.deroulFichier.add_command(label="Quitter", command=quitApp)
-		# self.root.protocol("WM_DELETE_WINDOW", quitApp) # pour gerer la fermeture avec la croix rouge et alt-f4
-
+		self.root.protocol("WM_DELETE_WINDOW", self.quitter) # pour gerer la fermeture avec la croix rouge et alt-f4
 
 		self.menuFichier.config(menu=self.deroulFichier)
 		self.menuFichier.pack(side=tk.LEFT)
+
+		self.menuEdition.config(menu=self.deroulEdition)
+		self.menuEdition.pack(side=tk.LEFT)
 
 		# Menu aide
 		self.menuAide = tk.Menubutton(self.menuFrame,text="Aide",underline=0,relief="raised")
@@ -827,6 +846,18 @@ class App:
 		# cube1 = Cube.Cube(self.canv,self.grille,(1,1))
 
 		self.canv.pack()
+
+
+
+
+	# Constructeur de l'application
+
+	def __init__(self):
+
+		self.root = tk.Tk()
+		self.root.withdraw()
+
+		self.config()
 
 		# Fin
 
