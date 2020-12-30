@@ -75,8 +75,8 @@ class App:
 				# pas optimise, mais facultatif
 				liste = self.canv.find_all()[self.grille.taille_x+self.grille.taille_y+3:] # a partir du nb de lignes+1 jusqu'a la fin : les faces des cubes
 				# attention : les id commencent a 1
-				for i in range(len(liste)):
-					if (i%3 == 0) and (liste[i] != self.cubeTest.id): # verifier si ça fonctionne toujours avec les pixmaps (autres types de polygones peut-etre ?)
+				for i in range(0,len(liste),3):
+					if liste[i] != self.cubeTest.id: # verifier si ça fonctionne toujours avec les pixmaps (autres types de polygones peut-etre ?)
 						# on a un id de cube, il nous faut l'objet pour avoir ses coordonnees
 						for c in self.CUBES:
 							# print("c.id :",c.id,"; liste[i] :",liste[i])
@@ -619,6 +619,11 @@ class App:
 	# Gestion d'evenements
 
 	def onMotion(self, event):
+		if self.visualiser.get() == False:
+			if self.cubeTest:
+				self.cubeTest.effacer()
+				self.cubeTest = None
+			return
 		d = self.grille.definition
 		coordsEvent = (event.x,event.y)
 		coordsGrille = self.grille.canvasToGrille(coordsEvent)
@@ -783,7 +788,7 @@ class App:
 		self.deroulFichier.add_command(label="Sauver", command=self.sauverFichier)
 		self.deroulFichier.add_command(label="Annuler", command=self.annulerDernierCube)
 		self.root.bind("<Control-z>", self.annulerDernierCube)
-		self.visualiser = tk.BooleanVar(value=False)
+		self.visualiser = tk.BooleanVar(value=True)
 		self.deroulFichier.add_checkbutton(label="Visualiser", variable=self.visualiser)
 		self.deroulFichier.add_command(label="Couleur", command=self.ouvrirFenetreCouleur)
 		self.deroulFichier.add_separator()
