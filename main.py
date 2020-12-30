@@ -287,35 +287,27 @@ class App:
 	def annulerDernierCube(self,event=None):
 		"""Annule le dernier placement de cube."""
 		# le parametre event est obligatoire pour etre bind
-		if len(self.CUBES) == 1:
-			self.cacherInfos() # On enleve le dernier cube donc plus d'informations sur un cube
-			self.deroulFichier.entryconfigure(2,state="disabled") # option Sauver
-			self.deroulFichier.entryconfigure(3,state="disabled") # option Annuler
 		if len(self.CUBES) > 0:
-			self.NB_CUBES -= 1 #Un cube en moins dans la scene
-			self.canv.itemconfigure(self.texte_cubes, text="Nombre de cubes dans la scene: "+str(self.NB_CUBES))
-			cube = self.CUBES[-1]
-			coordsGrille = self.grille.canvasToGrille(cube.coords)
-			self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)].pop()
-			if(self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)] == []):
-				del self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)]
-			self.CUBES[-1].effacer()
-			self.CUBES.pop()
+			self.supprimerCube(self.CUBES[-1])
 
-	def supprimerCube(self):
+	def supprimerCube(self,pcube=None):
+		# si c'est le dernier cube present
 		if len(self.CUBES) == 1:
 			self.deroulFichier.entryconfigure(2,state="disabled") # option Sauver
 			self.deroulFichier.entryconfigure(3,state="disabled") # option Annuler
-		if len(self.CUBES) > 0:
-			self.NB_CUBES -= 1 #Un cube en moins dans la scene
-			self.canv.itemconfigure(self.texte_cubes, text="Nombre de cubes dans la scene: "+str(self.NB_CUBES))
-			cube = self.cube_select
-			coordsGrille = self.grille.canvasToGrille(cube.coords)
-			self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)].pop()
-			if(self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)] == []):
-				del self.DICO[(coordsGrille[0]+cube.h,coordsGrille[1]+cube.h)]
-			cube.effacer()
-			self.CUBES.remove(cube)
+		# vu qu'on en passe un en parametre, on est sur qu'il y en a au moins un
+		self.NB_CUBES -= 1 #Un cube en moins dans la scene
+		self.canv.itemconfigure(self.texte_cubes, text="Nombre de cubes dans la scene: "+str(self.NB_CUBES))
+		
+		if not(pcube):
+			pcube = self.cube_select
+			self.cacherInfos() # On enleve le cube selectionne donc plus d'informations sur lui
+		x,y = pcube.coordsTo3D()
+		self.DICO[(x,y)].pop()
+		if(self.DICO[(x,y)] == []):
+			del self.DICO[(x,y)]
+		pcube.effacer()
+		self.CUBES.remove(pcube)
 
 	def placerCube(self,pcoordsGrille,phauteur,pcouleur=None):
 		"""
