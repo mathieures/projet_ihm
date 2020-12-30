@@ -153,7 +153,7 @@ class App:
 		self.DICO = {}
 		self.deroulFichier.entryconfigure(2,state="disabled") # option Exporter
 		self.deroulFichier.entryconfigure(3,state="disabled") # option Sauver
-		self.deroulFichier.entryconfigure(4,state="disabled") # option Annuler
+		self.deroulFichier.entryconfigure(2,state="disabled") # option Annuler
 
 	def sauverFichier(self):
 		fichier = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=(("Text files", ".txt"),("All files", ".*"))) # On demande a l'utilisateur dans quel fichier il veut sauver le projet
