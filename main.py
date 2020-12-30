@@ -2,6 +2,7 @@ import tkinter as tk
 import Grille
 import Cube
 from tkinter import filedialog,messagebox
+import webbrowser # Pour la documentation
 
 class App:
 
@@ -696,12 +697,14 @@ class App:
 		self.root.quit()
 
 	def montrerInfos(self):
+		# Pour rendre les infos visibles
 		self.info_nom.pack()
 		self.info_pos.pack()
 		self.zone_dessin.pack()
 		self.supprimer_bouton.pack()
 
 	def cacherInfos(self):
+		# Pack forget pour ne plus rendre les infos visibles
 		self.info_nom.pack_forget()
 		self.info_pos.pack_forget()
 		self.zone_dessin.pack_forget()
@@ -728,6 +731,27 @@ class App:
 
 		self.fenetre.pack(fill="both", expand="yes",side="left")
 
+	def apropos(self):
+		# Ouverture d'une nouvelle fenetre
+
+		# On prend les infos de la root window, pour positionner la fentre en haut a gauche de la root
+		x = self.root.winfo_x()
+		y = self.root.winfo_y()
+
+		fenetre = tk.Toplevel(self.root)
+		fenetre.resizable(width=False, height=False)
+		fenetre.title("A propos")
+		fenetre.geometry("+%d+%d" % (x,y))
+		tk.Label(fenetre, text="Projet IHM L3 informatique").pack()
+		tk.Label(fenetre, text="Copyright © 2020-2021").pack()
+		label_dev = tk.LabelFrame(fenetre, text="Développeurs")
+		tk.Label(label_dev, text="RESSEGUIER Mathieu et BOGADO GARCIA Maximino").pack()
+		label_dev.pack()
+		fenetre.grab_set()
+		self.root.wait_window(fenetre)
+
+	def ouvrirDocumentation(self):
+		webbrowser.open('doc.html')
 
 	# Constructeur de l'application
 
@@ -778,10 +802,12 @@ class App:
 		self.menuFichier.pack(side=tk.LEFT)
 
 		# Menu aide
-
-		self.menuAide = tk.Menu(self.menuFichier,tearoff=False)
-		self.menuAide.add_command(label="Aide", command=self.nouveauFichier)
-		#self.menuAide.pack(side=tk.RIGHT)
+		self.menuAide = tk.Menubutton(self.menuFrame,text="Aide",underline=0,relief="raised")
+		self.deroulAide = tk.Menu(self.menuAide,tearoff=False)
+		self.deroulAide.add_command(label="Documentation", command=self.ouvrirDocumentation)
+		self.deroulAide.add_command(label="A propos", command=self.apropos)
+		self.menuAide.config(menu=self.deroulAide)
+		self.menuAide.pack(side=tk.RIGHT)
 
 		# Canvas
 
