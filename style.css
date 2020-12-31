@@ -57,6 +57,13 @@ details > h2 {
   margin: 0;
 }
 
+details > ul {
+  list-style: square inside;
+  background-color: #ddd;
+  padding: 2px 6px;
+  margin: 0;
+}
+
 details > p {
   background-color: #ddd;
   padding: 2px 6px;
@@ -76,5 +83,5 @@ footer {
 	background: #ddd;
 	text-align: center;
 	display : table-row;
-	height: 100px; /* à titre d'exemple */
+	height: 100px;
 }
