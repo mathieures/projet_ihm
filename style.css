@@ -1,0 +1,80 @@
+.titre{
+  background-image: linear-gradient(180deg, #fff, #ddd 40%, #ccc);
+}
+
+body {
+	background-color: #eee;
+	display : table;
+	width: 100%;
+}
+
+p {
+	font: 16px "Open Sans", Calibri, sans-serif;
+	text-align: center;
+}
+
+img{
+  padding: 10px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+h1 {
+  padding: 20px;
+  font-weight: bold;
+  font: 32px "Open Sans", Calibri, sans-serif;
+  text-align: center;
+}
+
+h2 {
+  font: 24px "Open Sans", Calibri, sans-serif;
+  font-weight: bold;
+}
+
+details {
+  padding: 20px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  font: 16px "Open Sans", Calibri, sans-serif;
+  width: 620px;
+}
+
+details > summary {
+  padding: 2px 6px;
+  width: 15em;
+  background-color: #ddd;
+  border: none;
+  box-shadow: 3px 3px 4px black;
+  cursor: pointer;
+}
+
+details > h2 {
+  background-color: #ddd;
+  padding: 2px 6px;
+  margin: 0;
+}
+
+details > p {
+  background-color: #ddd;
+  padding: 2px 6px;
+  margin: 0;
+}
+
+details > img {
+  background-color: #ddd;
+  padding: 10px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+footer {
+	background: #ddd;
+	text-align: center;
+	display : table-row;
+	height: 100px; /* à titre d'exemple */
+}
