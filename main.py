@@ -807,7 +807,7 @@ class App:
 		label_cube.pack(padx=20)
 
 		# Construction de la scene avec les parametres choisis
-		tk.Button(self.fenetre_config,text='Construire la scene', command=self.initScene).pack(pady=10)
+		tk.Button(self.fenetre_config,text='Construire la scène', command=self.initScene).pack(pady=10)
 
 		self.fenetre_config.protocol("WM_DELETE_WINDOW", self.quitter) # pour gerer la fermeture avec la croix rouge et alt-f4
 
