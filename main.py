@@ -293,6 +293,11 @@ class App:
 
 	def supprimerCube(self,pcube=None):
 		# si c'est le dernier cube present
+		# On supprime les bindings des fleches directionnelles pour eviter un key error du Dico
+		self.root.unbind("<Left>")
+		self.root.unbind('<Right>')
+		self.root.unbind('<Up>')
+		self.root.unbind('<Down>')
 		if len(self.CUBES) == 1:
 			self.deroulFichier.entryconfigure(2,state="disabled") # option Exporter
 			self.deroulFichier.entryconfigure(3,state="disabled") # option Sauver
