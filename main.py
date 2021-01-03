@@ -124,7 +124,7 @@ class App:
 		x,y,h = pcoords3D
 
 		# On efface le cube du dico
-		self.__DICO.enlever((prec_x,prec_y),h)
+		self.__DICO.enlever((prec_x,prec_y),pcube.h)
 		
 		prec = pcube.coords # coordonnees precedentes du cube
 
