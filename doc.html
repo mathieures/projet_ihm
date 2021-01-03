@@ -10,35 +10,56 @@
   	<h1>Bienvenue dans la documentation du projet IHM<br>fait par des étudiants en L3 informatique de l'université de Toulon</h1>
     </div>
     <details>
-    <summary>Présentation</summary>
-    <p>Le travail demandé était de réaliser une interface ergonomique de construction de scènes en perspective dimétrique, </p>
+	    <summary>Présentation</summary>
+	    <p>Le travail demandé était de réaliser une interface de construction de scènes en perspective dimétrique, l'utilisateur peut placer des cubes sur une grille ou alors les uns sur les autres. L'objectif étant d'avoir une application ergonomique homogène et didactique. <br>La programmation orientée objet et la modularité étaient également primordiales pour la conception de l'application.</p>
+	    <img src="images/presentation.png" alt="presentation" width=20000;>
 	</details>
   	<details>
-    <summary>Paramètrage</summary>
-    <p>Au lancement du logiciel, une première fenêtre apparaît, elle permet de configurer la scène:</p>
-    <img src="images/param.png" alt="scene" width="300" height="300">
-    <p>Différentes options sont disponibles: <br> </p>
-     <ul>
-  	<li>Paramétrage du Canvas</li>
-  	<li>Paramétrage de la grille</li>
-  	<li>Choix de la taille des cubes</li>
-	</ul> 
+	    <summary>Paramètrage</summary>
+	    <p>Au lancement du logiciel, une première fenêtre apparaît, elle permet de configurer la scène:</p>
+	    <img src="images/param.png" alt="scene" width="300" height="300">
+	    <p>Différentes options sont disponibles: <br> </p>
+	     <ul>
+		  	<li>Configuration du Canvas</li>
+		  		<p>Hauteur: Hauteur du canvas en pixels</p>
+		  		<p>Largeur: Largeur du canvas en pixels</p>
+		  	<li>Configuration de la grille</li>
+		  		<p>Nombres de cases en x et y: Le point d'origine de la grille (0,0) est celui d'en haut (voir exemple ci-dessous)</p>
+		  		<img src="images/ex_xy.png" alt="exemple">
+		  	<li>Configuration des cubes</li>
+		  		<p>Choissisez la taille des cubes: Taille des cubes en pixels</p> 
+		</ul> 
 	</details>
 	<details>
-    <summary>Utilisation</summary>
-    <p>Au lancement de la scène avec vos propres paramètres, une grille apparaît, une prévisualisation est disponible lors du survol de la souris sur la grille ou sur un cube.</p>
-    <h2>Bindings</h2>
-    <p>CLic gauche: Place un cube</p>
-    <p>CLic droit: Selectionne un cube (Il sera colorié en rouge)</p>
-    <img src="images/scene_debut.png" alt="scene" width="400" height="300">
+	    <summary>Utilisation</summary>
+	    <p>Au lancement de la scène avec vos propres paramètres, une grille apparaît, une prévisualisation est disponible lors du survol de la souris sur la grille ou sur un cube.</p>
+	    <h2>Bindings</h2>
+	    <p>Clic gauche: Place un cube</p>
+	    <p>Clic droit: Selectionne un cube (Il sera colorié en rouge)</p>
+	    <p>Ctrl-Z: Annule le dernier placement (Il faut avoir placé un cube)</p>
+	    <p>Alt-F4: Quitte l'application</p>
+	    <p>Flèches directionelles: Déplacer un cube selectionné (Voir l'exemple ci-dessous)</p>
+	    <img src="images/gif_bouger_cube.gif" alt="scene">
+	    <h2>Menu Edition</h2>
+	    <p>Visualiser: Active/Désactive la prévisualisation des cubes</p>
+	    <p>Couleur: Outil de modification de la couleur des prochains cubes placés</p>
+	    <p>Annuler: Annule le dernier placement (Il faut avoir placé un cube)</p>
+	   	<h2>Menu Fichier</h2>
+	    <p>Nouveau: Crée une nouvelle scène vide</p>
+	    <p>Charger: Charge un projet à partir d'un fichier</p>
+	    <p>Exporter: Exporte la scène au format SVG (Il faut avoir placé un cube)</p>
+	    <p>Sauver: Sauvegarde la scène actuelle dans un nouveau fichier (Il faut avoir placé un cube)</p>
+	    <p>Quitter: Quitte l'application</p>
 	</details>
 	<details>
-    <summary>Code</summary>
-    <p>Le code est disponible sur <a href="https://github.com/mathieures/ihm_project" target="_blank">github</a>
+	    <summary>Code</summary>
+	    <p>Langage: Python 3</p>
+	    <p>Librairies utilisées: Tkinter, webbrowser</p>
+	    <p>Le code est disponible sur <a href="https://github.com/mathieures/ihm_project" target="_blank">github</a></p>
 	</details>
   </body>
   <footer>
-  	<p>Copyright 2020-2021</p>
   	<p>RESSEGUIER Mathieu - BOGADO GARCIA Maximino</p>
+  	<p>Copyright © 2020-2021</p>
   </footer>
 </html>

@@ -124,7 +124,7 @@ class App:
 		x,y,h = pcoords3D
 
 		# On efface le cube du dico
-		self.__DICO.enlever((prec_x,prec_y),pcube)
+		self.__DICO.enlever((prec_x,prec_y),h)
 		
 		prec = pcube.coords # coordonnees precedentes du cube
 
@@ -192,10 +192,11 @@ class App:
 
 	def supprimer_cube(self,event=None,pcube=None):
 		# si c'est le dernier cube present
-		if len(self.__CUBES) == 1:
-			self.deroul_fichier.entryconfigure(2,state="disabled") # option Exporter
-			self.deroul_fichier.entryconfigure(3,state="disabled") # option Sauver
-			self.deroul_edition.entryconfigure(2,state="disabled")
+		# On supprime les bindings des fleches directionnelles pour eviter un key error du Dico
+		self.root.unbind("<Left>")
+		self.root.unbind('<Right>')
+		self.root.unbind('<Up>')
+		self.root.unbind('<Down>')
 		# vu qu'on en passe un en parametre, on est sur qu'il y en a au moins un
 		self.__NB_CUBES -= 1 #Un cube en moins dans la scene
 		self.canv.itemconfigure(self.texte_nb_cubes, text="Nombre de cubes dans la scene: "+str(self.__NB_CUBES))
