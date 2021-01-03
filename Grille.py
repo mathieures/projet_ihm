@@ -18,6 +18,10 @@ class Grille:
 		return self.__origine
 
 	def __init__(self,pcanvas,pdefinition=20,ptaille_x=10,ptaille_y=10,porigine=None):
+		"""
+		L'origine est passee en parametre selon si on veut la placer a un endroit
+		particulier (comme pour la fenetre de selection de couleur)
+		"""
 		self.__definition = pdefinition # taille des cotes d'un carre
 		self.__taille_x = ptaille_x # nombre de cases suivant l'axe x (qui va en bas à droite)
 		self.__taille_y = ptaille_y # nombre de cases suivant l'axe y (qui va en bas à gauche)
@@ -29,9 +33,10 @@ class Grille:
 			
 		print("origine :",self.__origine,"; definition :",self.definition)
 		# dessin de la grille
-		self.dessineGrille(pcanvas)
+		self.dessine_grille(pcanvas)
 
-	def dessineGrille(self,pcanvas):
+	def dessine_grille(self,pcanvas):
+		"""Dessine la grille"""
 		x = self.__origine[0]
 		y = self.__origine[1]
 		d = self.definition
@@ -46,18 +51,18 @@ class Grille:
 			x += d
 			y += d/2
 
-	def grilleToCanvas(self,pcoords):
+	def grille_to_canvas(self,pcoords):
 		"""
 		Convertit des coordonnees du referentiel tkinter
 		vers des coordonnees de la Grille (2D)
 		"""
 		orig = self.__origine
 		d = self.__definition
-		x = orig[0] + pcoords[0] * d - pcoords[1] * d
-		y = orig[1] + (pcoords[0]) * (d/2) + (pcoords[1]) * (d/2)
+		x = (orig[0] + pcoords[0] * d) - (pcoords[1] * d)
+		y = (orig[1] + pcoords[0] * (d/2)) + (pcoords[1] * (d/2))
 		return (x, y)
 
-	def canvasToGrille(self,pcoords):
+	def canvas_to_grille(self,pcoords):
 		"""
 		Convertit des coordonnees de la Grille (2D)
 		vers des coordonnees du referentiel tkinter
@@ -68,14 +73,14 @@ class Grille:
 		j = (pcoords[1] - orig[1])/d - (pcoords[0] - orig[0])/(2*d)
 		return (i, j)
 
-	def closestPoint(self,pcoordsGrille):
+	def closest_point(self,pcoords_grille):
 		"""
 		Prend en parametre des coordonnees de grille
 		et retourne le point (intersection) la plus proche
 		(a noter que si on veut prendre en parametre des coords de canvas,
 		on peut juste les convertir avant)
 		"""
-		x, y = pcoordsGrille
+		x, y = pcoords_grille
 		if(x > int(x) + 0.5):
 			x = int(x) + 1 # on arrondit au superieur
 		else:
@@ -86,12 +91,12 @@ class Grille:
 			y = int(y)
 		return (x,y)
 
-	def closestPointUp(self,pcoordsGrille):
-		return self.closestPoint((pcoordsGrille[0]-0.5,pcoordsGrille[1]-0.5))
+	def closest_point_up(self,pcoords_grille):
+		return self.closest_point((pcoords_grille[0]-0.5,pcoords_grille[1]-0.5))
 
 	def is_in_grille(self,pcoords):
-		coordsGrille = self.canvasToGrille(pcoords)
-		if(coordsGrille[0] < self.taille_x and coordsGrille[1] < self.taille_y and
-				coordsGrille[0] > 0 and coordsGrille[1] > 0):
+		coords_grille = self.canvas_to_grille(pcoords)
+		if(coords_grille[0] < self.taille_x and coords_grille[1] < self.taille_y and
+				coords_grille[0] > 0 and coords_grille[1] > 0):
 			return True
 		return False
