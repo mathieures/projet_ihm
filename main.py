@@ -84,20 +84,24 @@ class App:
 
 	def sauver_fichier(self):
 		# On demande a l'utilisateur dans quel fichier il veut sauver le projet
-		fichier = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=(("Text files", ".txt"),("All files", ".*")))
+		fichier = filedialog.asksaveasfilename(defaultextension=".ihm", filetypes=(("Text files", ".ihm"),("All files", ".*")))
 		try: # On ecrit dans le fichier les coordonnees et couleurs des __CUBES
-			with open(fichier, "w", encoding = "utf-8") as f:
-				for cube in self.__CUBES:
-					coords3D = cube.coords_to_3D()
-					couleur_faces = cube.couleur
-					f.write(f"{int(coords3D[0])},{int(coords3D[1])},{cube.h},{couleur_faces[0]},{couleur_faces[1]},{couleur_faces[2]}\n")
-		except: # Si il y a une erreur, le dire a l'utilisateur, (gerer les differentes erreurs apres !!!!)
-			messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du fichier.")
-			# attention : appele aussi quand l'utilisateur clique sur Annuler
+			f = open(fichier, "w", encoding = "utf-8")
+		except FileNotFoundError as fnf_error:
+			messagebox.showerror(title="Error", message="Erreur fichier non trouvé")
+		except IOError:
+			messagebox.showerror(title="Error", message="Le fichier n'existe pas")
+		else:
+			for cube in self.__CUBES:
+				coords3D = cube.coords_to_3D()
+				couleur_faces = cube.couleur
+				f.write(f"{int(coords3D[0])},{int(coords3D[1])},{cube.h},{couleur_faces[0]},{couleur_faces[1]},{couleur_faces[2]}\n")
+			f.close()
 
 	def ouvrir_fichier(self):
-		fichier = filedialog.askopenfile(mode="r",defaultextension=".txt", filetypes=(("Text files", ".txt"),("All files", ".*")))
-		if(fichier):
+		ext=''
+		fichier = filedialog.askopenfile(mode="r",defaultextension=".ihm", filetypes=(("Text files", ".ihm"),("All files", ".*")))
+		if fichier:
 			self.nouveau_fichier()
 			for ligne in fichier.readlines():
 				parse = ligne.rstrip().split(',')
@@ -678,7 +682,10 @@ class App:
 		self.root.wait_window(fenetre)
 
 	def ouvrir_documentation(self):
-		webbrowser.open('doc.html')
+		try:
+			webbrowser.open('doc.html')
+		except webbrowser.Error:
+			messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du navigateur")
 
 	def config(self):
 		# Creation de la fenetre pour configurer la scene
