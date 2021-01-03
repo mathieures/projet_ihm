@@ -96,9 +96,9 @@ class App:
 			# attention : appele aussi quand l'utilisateur clique sur Annuler
 
 	def ouvrir_fichier(self):
-		self.nouveau_fichier()
 		fichier = filedialog.askopenfile(mode="r",defaultextension=".txt", filetypes=(("Text files", ".txt"),("All files", ".*")))
 		if(fichier):
+			self.nouveau_fichier()
 			for ligne in fichier.readlines():
 				parse = ligne.rstrip().split(',')
 				self.placer_cube((int(parse[0]),int(parse[1])),int(parse[2]),parse[3:6])
