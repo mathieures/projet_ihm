@@ -8,8 +8,15 @@ def sauver_svg(pcanvas,pgrille,pliste_cubes,pcube_visu):
 	grille = pgrille
 
 	fichier = filedialog.asksaveasfilename(defaultextension=".svg", filetypes=(("SVG files", ".svg"),("All files", ".*")))
-	# try:
-	with open(fichier, "w", encoding = "utf-8") as f:
+	if not fichier:
+		return
+	try:
+		f = open(fichier, "w", encoding = "utf-8")
+	except FileNotFoundError:
+		messagebox.showerror(title="Error", message="Erreur fichier non trouvé")
+	except IOError:
+		messagebox.showerror(title="Error", message="Le fichier n'existe pas")
+	else:
 		# Ecriture du header xml, puis d'une viewbox, qui est en realite comme notre canvas
 		f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n")
 		f.write("<svg viewBox=" + "\"0 0 " + str(pcanvas.cget("width")) + " " + str(pcanvas.cget("height")) + "\" " + "xmlns=\"http://www.w3.org/2000/svg\">\n")
@@ -28,9 +35,7 @@ def sauver_svg(pcanvas,pgrille,pliste_cubes,pcube_visu):
 				coords2D = grille.canvas_to_grille(cube.coords)
 				_dessiner_cube_svg(coords2D,f,cube.h,cube.couleur)
 		f.write("</svg>")
-	# except: # Si il y a une erreur, le dire a l'utilisateur, (gerer les differentes erreurs apres !!!!)
-	# 	messagebox.showerror(title="Error", message="Erreur lors de l'ouverture du fichier.")
-	# 	# attention : appele aussi quand l'utilisateur clique sur Annuler
+		f.close()
 
 def _dessiner_grille_svg(pfichier):
 	"""Cette fonction dessine la grille dans un fichier SVG grace a des balises <line>"""

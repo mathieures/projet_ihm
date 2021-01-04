@@ -87,7 +87,7 @@ class App:
 		fichier = filedialog.asksaveasfilename(defaultextension=".ihm", filetypes=(("Text files", ".ihm"),("All files", ".*")))
 		try: # On ecrit dans le fichier les coordonnees et couleurs des __CUBES
 			f = open(fichier, "w", encoding = "utf-8")
-		except FileNotFoundError as fnf_error:
+		except FileNotFoundError:
 			messagebox.showerror(title="Error", message="Erreur fichier non trouvé")
 		except IOError:
 			messagebox.showerror(title="Error", message="Le fichier n'existe pas")
