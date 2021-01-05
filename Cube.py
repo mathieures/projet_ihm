@@ -117,7 +117,7 @@ class Cube:
 	def coords_to_3D(self):
 		"""
 		Retourne les coordonnees de la case "de base" sur lequel le cube est.
-		Note : ne va pas au point le plus proche, car on pourrait vouloir transformer des coordonnees precises.
+		Note : va pas au point le plus proche, car on aurait des float sinon.
 		"""
-		coordsGrille = self.__grille.canvas_to_grille(self.__coords)
+		coordsGrille = self.__grille.closest_point(self.__grille.canvas_to_grille(self.__coords))
 		return (coordsGrille[0]+self.__h, coordsGrille[1]+self.__h)

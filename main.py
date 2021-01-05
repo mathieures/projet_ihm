@@ -12,17 +12,16 @@ class App:
 	# Valeurs par defaut
 
 	__couleur_cube = ["#afafaf","#808080","#414141"] # couleur des cubes par defaut
+	__COULEUR_MAX = 16777215 # la couleur #ffffff en decimal (constante)
 
 	__cube_visu = None
 	__cube_select = None
-	__NB_CUBES = 0 # Pour savoir combien il y a de cubes dans la scene, et pour leur attribuer des numeros
+	NB_CUBES = 0 # Pour savoir combien il y a de cubes dans la scene, et pour leur attribuer des numeros
 	__precoords = () # Tuple pour memoriser les coordonnees precedentes pour le previsualisation
 
-	__DICO = dico.Dico() # contient la position 3D de tous les cubes sous la forme dico[(x,y)] = [hauteur_1,hauteur_2...]
+	DICO = dico.Dico() # contient la position 3D de tous les cubes sous la forme dico[(x,y)] = [hauteur_1,hauteur_2...]
 
-	__CUBES = [] # liste des cubes presents dans la scene
-
-	COULEUR_MAX = 16777215 # la couleur #ffffff en decimal (constante)
+	CUBES = [] # liste des cubes presents dans la scene
 
 
 	# Conservation des donnees
@@ -36,7 +35,7 @@ class App:
 		index_cube = self.canv.find_all().index(pcube.id) # index de la face du haut dans la liste de tous les elements du canvas
 
 		tag = "cube_"+str(pcube.id) # on a le tag "cube_idfaceduhaut", associe a toutes les faces du nouveau cube
-		for autre_cube in self.__CUBES:
+		for autre_cube in self.CUBES:
 			if autre_cube == pcube:
 				continue
 			
@@ -48,7 +47,7 @@ class App:
 			# on utilise le meme procede que dans placer_cube() pour avoir les coordonnees du cube analyse
 			autre_coords3D = autre_cube.coords_to_3D()
 
-			if pcube.h > autre_cube.h and autre_index > index_cube: # si le nouveau cube est plus haut mais que l'autre cube est dessine plus haut
+			if pcube.h > autre_cube.h and autre_index > index_cube: # si le nouveau cube est plus haut mais dessine plus bas que l'autre
 				self.canv.tag_raise(tag,(autre_cube.id+2)) # +2 car on doit placer le cube au dessus de toutes les faces de l'autre cube
 			elif pcube.h < autre_cube.h and autre_index < index_cube:
 				self.canv.tag_lower(tag,autre_cube.id) # le nouveau est plus bas
@@ -67,17 +66,17 @@ class App:
 						self.canv.tag_lower(tag,autre_cube.id)
 
 
-	# Manipulation de fichiers (plus pratique ici que dans un module)
+	# Manipulation de fichiers (plus pratique ici que dans un module, a cause des multiples bindings)
 	
 	def nouveau_fichier(self):
-		self.__NB_CUBES = 0
-		self.canv.itemconfigure(self.texte_nb_cubes, text="Nombre de __CUBES dans la scene: "+str(self.__NB_CUBES))
-		# on efface tous les __CUBES
-		for cube in self.__CUBES:
+		self.NB_CUBES = 0
+		self.canv.itemconfigure(self.texte_nb_cubes, text="Nombre de cubes dans la scene : "+str(self.NB_CUBES))
+		# on efface tous les cubes
+		for cube in self.CUBES:
 			cube.effacer()
-		# self.canv.delete("tag_cube") # plus simple a ecrire qu'appeler cube.effacer() pour tous les __CUBES
-		self.__CUBES = []
-		self.__DICO.vider()
+		# self.canv.delete("tag_cube") # plus simple a ecrire qu'appeler cube.effacer() pour tous les cubes
+		self.CUBES = []
+		self.DICO.vider()
 		self.deroul_fichier.entryconfigure(2,state="disabled") # option Exporter
 		self.deroul_fichier.entryconfigure(3,state="disabled") # option Sauver
 		self.deroul_fichier.entryconfigure(2,state="disabled") # option Annuler
@@ -85,14 +84,14 @@ class App:
 	def sauver_fichier(self):
 		# On demande a l'utilisateur dans quel fichier il veut sauver le projet
 		fichier = filedialog.asksaveasfilename(defaultextension=".ihm", filetypes=(("Text files", ".ihm"),("All files", ".*")))
-		try: # On ecrit dans le fichier les coordonnees et couleurs des __CUBES
+		try: # On ecrit dans le fichier les coordonnees et couleurs des cubes
 			f = open(fichier, "w", encoding = "utf-8")
 		except FileNotFoundError:
 			messagebox.showerror(title="Error", message="Erreur fichier non trouvé")
 		except IOError:
 			messagebox.showerror(title="Error", message="Le fichier n'existe pas")
 		else:
-			for cube in self.__CUBES:
+			for cube in self.CUBES:
 				coords3D = cube.coords_to_3D()
 				couleur_faces = cube.couleur
 				f.write(f"{int(coords3D[0])},{int(coords3D[1])},{cube.h},{couleur_faces[0]},{couleur_faces[1]},{couleur_faces[2]}\n")
@@ -108,15 +107,17 @@ class App:
 				self.placer_cube((int(parse[0]),int(parse[1])),int(parse[2]),parse[3:6])
 			fichier.close()
 
+
 	# Export en SVG (utilisation du module dedie)
 	def sauver_svg(self):
-		export_svg.sauver_svg(self.canv,self.grille,self.__CUBES,self.__cube_visu)
+		export_svg.sauver_svg(self.canv,self.grille,self.CUBES,self.__cube_visu)
 
-	# Manipulation des __CUBES
+
+	# Manipulation des cubes
 
 	def rechercher_cube(self,pid):
 		''' A partir d'un id, la fonction renvoie l'objet cube correspondant a cet id'''
-		for cube in self.__CUBES: # on teste chaque cube deja place
+		for cube in self.CUBES: # on teste chaque cube deja place
 			if cube.id == pid: # si c'est celui sur lequel on a clique
 				return(cube)
 		return(None)
@@ -128,7 +129,7 @@ class App:
 		x,y,h = pcoords3D
 
 		# On efface le cube du dico
-		self.__DICO.enlever((prec_x,prec_y),pcube.h)
+		self.DICO.enlever((prec_x,prec_y),pcube.h)
 		
 		prec = pcube.coords # coordonnees precedentes du cube
 
@@ -140,12 +141,12 @@ class App:
 		pcube.coords = coords_canvas
 		pcube.h = h
 		self.inserer_dans_display_list(pcube)
-		self.__DICO[pcoords3D[:2]] = pcoords3D[2]
+		self.DICO[pcoords3D[:2]] = pcoords3D[2]
 
 	def deplacer_cube(self,event,plus_x = 0,plus_y = 0):
 		'''
-		Fonction pour deplacer un cube en fonction des fleches directionnelles ;
-		les parametres plus_x et plus_y indiquent ou sera placé le cube apres la fonction
+		Fonction pour deplacer un cube en fonction des fleches directionnelles :
+		les parametres plus_x et plus_y indiquent ou sera placé le cube apres l'appel de la fonction.
 		'''
 		if(plus_y == 1):
 			self.zone_dessin.itemconfig(self.fleche_haut,fill = "black")
@@ -168,31 +169,32 @@ class App:
 			self.zone_dessin.itemconfig(self.fleche_gauche,fill = "red")
 			self.zone_dessin.itemconfig(self.fleche_droite,fill = "black")
 		
-		x,y = self.grille.closest_point(self.__cube_select.coords_to_3D()) # case "de base" du cube
+		x,y = self.__cube_select.coords_to_3D() # case "de base" du cube
 		h = self.__cube_select.h
 
 		x2,y2 = x+plus_x,y+plus_y # prochaine position du cube
 
 		# On teste si il y a deja un cube dans la nouvelle position
-		if((x2,y2) in self.__DICO):
+		if((x2,y2) in self.DICO):
 			# si oui, alors on deplace le cube au dessus du plus haut cube
-			h = max(self.__DICO[(x2,y2)])
+			h = max(self.DICO[(x2,y2)])
 
 			self.translation_cube(self.__cube_select,(x2,y2,h+1))
 			
-			self.pos_cube.set("position | x:"+str(int(x2))+" y:"+str(int(y2))+" hauteur: "+str(h+1))
+			self.pos_cube.set("position | x : "+str(int(x2))+" y : "+str(int(y2))+" hauteur : "+str(h+1))
 		else:
 			# sinon, on le deplace à la hauteur 0
 			self.translation_cube(self.__cube_select,(x2,y2,0))
 			
-			self.pos_cube.set("position | x:"+str(int(x2))+" y:"+str(int(y2))+" hauteur: 0")
+			self.pos_cube.set("position | x : "+str(int(x2))+" y : "+str(int(y2))+" hauteur : 0")
 
 
 	def annuler_dernier_cube(self,event=None):
 		"""Annule le dernier placement de cube."""
 		# le parametre event est obligatoire pour etre bind
-		if len(self.__CUBES) > 0:
-			self.supprimer_cube(pcube=self.__CUBES[-1])
+		if len(self.CUBES) > 0:
+			print("cubes dans annuler :",self.CUBES)
+			self.supprimer_cube(pcube=self.CUBES[-1])
 
 	def supprimer_cube(self,event=None,pcube=None):
 		# si c'est le dernier cube present
@@ -202,21 +204,23 @@ class App:
 		self.root.unbind('<Up>')
 		self.root.unbind('<Down>')
 		# vu qu'on en passe un en parametre, on est sur qu'il y en a au moins un
-		self.__NB_CUBES -= 1 #Un cube en moins dans la scene
-		self.canv.itemconfigure(self.texte_nb_cubes, text="Nombre de cubes dans la scene: "+str(self.__NB_CUBES))
+		self.NB_CUBES -= 1 #Un cube en moins dans la scene
+		self.canv.itemconfigure(self.texte_nb_cubes, text="Nombre de cubes dans la scene : "+str(self.NB_CUBES))
 		
-		if not(pcube):
+		if pcube is None:
 			# si on ne precise aucun cube, on supprime le cube selectionne (il faut donc qu'il existe)
-			if(self.__cube_select):
+			if self.__cube_select is not None:
 				pcube = self.__cube_select
 				self.cacher_infos() # On enleve le cube selectionne donc plus d'informations sur lui
 			else:
 				return
 		x,y = pcube.coords_to_3D()
-		self.__DICO.enlever((x,y),pcube.h)
+		print("cubes dans supprimer :",self.CUBES)
+		print("dans supprimer, on essaie d'enlever :",(x,y))
+		self.DICO.enlever((x,y),pcube.h)
 
 		pcube.effacer()
-		self.__CUBES.remove(pcube)
+		self.CUBES.remove(pcube)
 
 	def placer_cube(self,pcoords_grille,phauteur,pcouleur=None):
 		"""
@@ -224,21 +228,22 @@ class App:
 		Attention : recale la position au point le plus proche (closest_point)
 		"""
 		coords3D = self.grille.closest_point(pcoords_grille) # coordonnees de la case ou est place le cube
-		self.__DICO[coords3D] = phauteur # coordonnees reelles du cube, sur une case de la grille mais en hauteur
+		print("on veut pas que ça soit des float : coords3d :",coords3D)
+		self.DICO[coords3D] = phauteur # coordonnees reelles du cube, sur une case de la grille mais en hauteur
 
 		# on transforme les coordonnees 3D en coordonnees 2D "aplaties", transposees "comme on les voit", sans hauteur
 		coordsGrille = (coords3D[0]-phauteur,coords3D[1]-phauteur)
 		if not(pcouleur):
 			pcouleur = self.__couleur_cube
 
-		self.__NB_CUBES += 1 #Un cube en plus dans la scene
-		self.canv.itemconfigure(self.texte_nb_cubes, text="Nombre de cubes dans la scene: "+str(self.__NB_CUBES))
+		self.NB_CUBES += 1 #Un cube en plus dans la scene
+		self.canv.itemconfigure(self.texte_nb_cubes, text="Nombre de cubes dans la scene : "+str(self.NB_CUBES))
 
-		cube_tmp = cube.Cube(self.canv,self.grille,coordsGrille,phauteur,pcouleur, self.__NB_CUBES)
+		cube_tmp = cube.Cube(self.canv,self.grille,coordsGrille,phauteur,pcouleur, self.NB_CUBES)
 		self.inserer_dans_display_list(cube_tmp)
 
 
-		self.__CUBES.append(cube_tmp)
+		self.CUBES.append(cube_tmp)
 		# on active les options d'exportation, de sauvegarde et d'annulation
 		self.deroul_fichier.entryconfigure(2,state="normal")
 		self.deroul_fichier.entryconfigure(3,state="normal")
@@ -266,7 +271,7 @@ class App:
 		"""
 		Ouvre la fenetre de selection des couleurs pour les cubes.
 		Impossible a modulariser, car intervient sur __couleur_cube
-		(il faudrait donc importer main, causant une dependance circulaire)
+		(il faudrait donc importer ce fichier, causant une dependance circulaire)
 		"""
 		self.__fenetre_couleur = tk.Toplevel(self.root)
 		
@@ -346,13 +351,13 @@ class App:
 		# Sliders affiches en bas
 		# Note : modifier une variable liee n'appelle pas le callback, utile pour modifier toutes les scales en meme temps
 		# (https://stackoverflow.com/questions/4038517/tkinter-set-a-scale-value-without-triggering-callback)
-		scale_couleur_haut = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.COULEUR_MAX,
+		scale_couleur_haut = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.__COULEUR_MAX,
 									command=self.update_couleur_haut, showvalue=0, resolution=1, length=200,
 									variable=self.__code_couleur_haut_RVB).pack() # length a equilibrer
-		scale_couleur_gauche = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.COULEUR_MAX,
+		scale_couleur_gauche = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.__COULEUR_MAX,
 									command=self.update_couleur_gauche, showvalue=0, resolution=1, length=200,
 									variable=self.__code_couleur_gauche_RVB).pack()
-		scale_couleur_droite = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.COULEUR_MAX,
+		scale_couleur_droite = tk.Scale(bottom_frame_couleur,orient="horizontal", from_=0, to=self.__COULEUR_MAX,
 									command=self.update_couleur_droite, showvalue=0, resolution=1, length=200,
 									variable=self.__code_couleur_droite_RVB).pack()
 
@@ -507,8 +512,74 @@ class App:
 			self.__stringvar_couleur_droite.get()])
 		self.__fenetre_couleur.destroy()
 
+
 	# Gestion d'evenements
 
+	def on_click(self,event):
+		"""En cas de clic sur le canvas"""
+		current_coords = (event.x,event.y)
+		converted_coords = self.grille.canvas_to_grille(current_coords)
+		# print("click on :",current_coords,"=>",converted_coords)
+
+		face_cliquee = self.canv.find_withtag("current") # id du polygone sur lequel on a clique
+
+		if(self.canv.type(face_cliquee) == "polygon"): # si on a bien clique sur un polygone (une face de cube)
+			id_cube = int(self.canv.gettags(face_cliquee)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
+			cube_tmp = self.rechercher_cube(id_cube)
+			if cube_tmp is not None:
+				x,y = self.grille.canvas_to_grille(cube_tmp.coords) # coordonnees 2D "reelles" du cube dans la grille
+
+				position3D = (x+cube_tmp.h,y+cube_tmp.h,cube_tmp.h) # on obtient les coordonnees de hauteur 0 (case de base), et la hauteur
+
+				# on teste les id de faces pour savoir laquelle c'etait ; face_cliquee[0] car c'est un tuple
+				if face_cliquee[0] == cube_tmp.haut:
+					self.placer_cube_haut(position3D)
+				elif face_cliquee[0] == cube_tmp.gauche:
+					self.placer_cube_gauche(position3D)
+				elif face_cliquee[0] == cube_tmp.droite:
+					self.placer_cube_droite(position3D)
+
+		elif self.grille.is_in_grille(current_coords):
+			# sinon ce n'est pas un polygone alors on a clique autre part : on regarde si c'est dans la grille
+			# il faut supprimer la limite de placement en vertical vers le haut, sinon on peut pas faire + de 1 cube en (0,0)
+			hauteur = 0
+			self.placer_cube(self.grille.closest_point_up(converted_coords),hauteur) # on ajuste le point 0.5 case plus haut
+		if self.__cube_visu is not None:
+			self.__cube_visu.priorite() # a changer par inserer
+
+	def on_cube_click(self,event):
+		''' Fonction pour la selection des cubes, en cas de clic droit sur un cube '''
+		if self.__cube_select is not None:
+			self.cacher_infos()
+			# On deselectionne le cube d'avant
+			self.__cube_select.deselection_cube()
+			# On supprime les bindings des fleches directionnelles
+			self.root.unbind("<Left>")
+			self.root.unbind('<Right>')
+			self.root.unbind('<Up>')
+			self.root.unbind('<Down>')
+			self.__cube_select = None
+
+		current_coords = (event.x,event.y)
+		converted_coords = self.grille.canvas_to_grille(current_coords)
+		face_cliquee = self.canv.find_withtag("current") # id du polygone sur lequel on a clique
+
+		if(self.canv.type(face_cliquee) == "polygon"): # si on a bien clique sur un polygone (une face de cube)
+			id_cube = int(self.canv.gettags(face_cliquee)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
+			cube_tmp = self.rechercher_cube(id_cube)
+			if cube_tmp is not None:
+				self.montrer_infos()
+				coords_grille = self.grille.canvas_to_grille(cube_tmp.coords)
+				self.nom_cube.set("cube n°"+str(cube_tmp.numero))
+				self.pos_cube.set("position | x :"+str(int(coords_grille[0]+cube_tmp.h))+" y :"+str(int(coords_grille[1]+cube_tmp.h))+" hauteur : "+str(cube_tmp.h))
+				cube_tmp.selection_cube()
+				self.__cube_select = cube_tmp
+				# On bind les fleches directionnelles a la fonction deplacer_cube
+				self.root.bind('<Left>', lambda event:self.deplacer_cube(event,plus_x = -1))
+				self.root.bind('<Right>', lambda event:self.deplacer_cube(event,plus_x= 1))
+				self.root.bind('<Up>', lambda event:self.deplacer_cube(event,plus_y = -1))
+				self.root.bind('<Down>', lambda event:self.deplacer_cube(event,plus_y = 1))
+	
 	def on_motion(self, event):
 		if self.visualiser.get() == False:
 			if self.__cube_visu:
@@ -519,7 +590,7 @@ class App:
 		coordsEvent = (event.x,event.y)
 		coordsGrille = self.grille.canvas_to_grille(coordsEvent)
 
-		if(self.__cube_visu == None):
+		if self.__cube_visu is None:
 			# On cree le cube qui sera celui de la previsualisation
 			if(self.grille.is_in_grille(coordsEvent)):
 				# On place le cube si l'utilisateur entre dans la grille
@@ -533,7 +604,7 @@ class App:
 			if(self.canv.type(currentFace) == "polygon"): # si on a est bien sur un polygone (une face de cube)
 				id_cube = int(self.canv.gettags(currentFace)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
 				cube_tmp = self.rechercher_cube(id_cube)
-				if(cube_tmp != 0):
+				if cube_tmp is not None:
 					x,y = self.grille.canvas_to_grille(cube_tmp.coords) # coordonnees 2D "reelles" du cube_tmp dans la grille
 					# on teste les id de faces pour savoir laquelle c'etait ; currentFace[0] car c'est un tuple
 					# on adapte la position en fonction de la face courante
@@ -558,73 +629,9 @@ class App:
 				self.__precoords = new_coords
 				self.canv.move("cube_"+str(self.__cube_visu.id), delta_x,delta_y)
 
-	def on_click(self,event):
-		"""En cas de clic sur le canvas"""
-		current_coords = (event.x,event.y)
-		converted_coords = self.grille.canvas_to_grille(current_coords)
-		# print("click on :",current_coords,"=>",converted_coords)
-
-		face_cliquee = self.canv.find_withtag("current") # id du polygone sur lequel on a clique
-
-		if(self.canv.type(face_cliquee) == "polygon"): # si on a bien clique sur un polygone (une face de cube)
-			id_cube = int(self.canv.gettags(face_cliquee)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
-			cube_tmp = self.rechercher_cube(id_cube)
-			if(cube_tmp != 0):
-				x,y = self.grille.canvas_to_grille(cube_tmp.coords) # coordonnees 2D "reelles" du cube dans la grille
-
-				position3D = (x+cube_tmp.h,y+cube_tmp.h,cube_tmp.h) # on obtient les coordonnees de hauteur 0 (case de base), et la hauteur
-
-				# on teste les id de faces pour savoir laquelle c'etait ; face_cliquee[0] car c'est un tuple
-				if face_cliquee[0] == cube_tmp.haut:
-					self.placer_cube_haut(position3D)
-				elif face_cliquee[0] == cube_tmp.gauche:
-					self.placer_cube_gauche(position3D)
-				elif face_cliquee[0] == cube_tmp.droite:
-					self.placer_cube_droite(position3D)
-
-		elif self.grille.is_in_grille(current_coords):
-			# sinon ce n'est pas un polygone alors on a clique autre part : on regarde si c'est dans la grille
-			# il faut supprimer la limite de placement en vertical vers le haut, sinon on peut pas faire + de 1 cube en (0,0)
-			hauteur = 0
-			self.placer_cube(self.grille.closest_point_up(converted_coords),hauteur) # on ajuste le point 0.5 case plus haut
-		if(self.__cube_visu):
-			self.__cube_visu.priorite() # a changer par inserer
-
-	def on_cube_click(self,event):
-		''' Fonction pour la selection des cubes '''
-		if(self.__cube_select != None):
-			self.cacher_infos()
-			# On deselectionne le cube d'avant
-			self.__cube_select.deselection_cube()
-			# On supprime les bindings des fleches directionnelles
-			self.root.unbind("<Left>")
-			self.root.unbind('<Right>')
-			self.root.unbind('<Up>')
-			self.root.unbind('<Down>')
-			self.__cube_select = None
-
-		current_coords = (event.x,event.y)
-		converted_coords = self.grille.canvas_to_grille(current_coords)
-		face_cliquee = self.canv.find_withtag("current") # id du polygone sur lequel on a clique
-
-		if(self.canv.type(face_cliquee) == "polygon"): # si on a bien clique sur un polygone (une face de cube)
-			id_cube = int(self.canv.gettags(face_cliquee)[0].split("_")[1]) # tag 0 : "cube_idfaceduhaut"
-			cube = self.rechercher_cube(id_cube)
-			if(cube != 0):
-				self.montrer_infos()
-				coords_grille = self.grille.canvas_to_grille(cube.coords)
-				self.nom_cube.set("cube n°"+str(cube.numero))
-				self.pos_cube.set("position | x:"+str(int(coords_grille[0]+cube.h))+" y:"+str(int(coords_grille[1]+cube.h))+" hauteur: "+str(cube.h))
-				cube.selection_cube()
-				self.__cube_select = cube
-				# On bind les fleches directionnelles a la fonction deplacer_cube
-				self.root.bind('<Left>', lambda event:self.deplacer_cube(event,plus_x = -1))
-				self.root.bind('<Right>', lambda event:self.deplacer_cube(event,plus_x= 1))
-				self.root.bind('<Up>', lambda event:self.deplacer_cube(event,plus_y = -1))
-				self.root.bind('<Down>', lambda event:self.deplacer_cube(event,plus_y = 1))
 
 	def quitter(self):
-		if messagebox.askyesno('Quit', 'Êtes-vous sûr de vouloir quitter?'):
+		if messagebox.askyesno('Quit', 'Êtes-vous sûr de vouloir quitter ?'):
 			self.root.quit()
 
 	def montrer_infos(self):
@@ -696,7 +703,7 @@ class App:
 
 		# Config du canvas
 		label_config = tk.LabelFrame(self.fenetre_config, text='Configuration du canvas')
-		self.spinbox_hauteur = tk.Spinbox(label_config, from_=100, to=1000)
+		self.spinbox_hauteur = tk.Spinbox(label_config, from_=100, to=1000, increment=10)
 		self.spinbox_hauteur.grid(column=1, row=0, ipadx=5, pady=5)
 		self.spinbox_hauteur.delete(0,tk.END)
 		self.spinbox_hauteur.insert(0,500)
@@ -704,7 +711,7 @@ class App:
 		label_hauteur = tk.Label(label_config, text="Hauteur : ")
 		label_hauteur.grid(column=0, row=0, ipadx=5, pady=5)
 
-		self.spinbox_largeur = tk.Spinbox(label_config, from_=100, to=1000)
+		self.spinbox_largeur = tk.Spinbox(label_config, from_=100, to=1000, increment=10)
 		self.spinbox_largeur.grid(column=1, row=1, ipadx=5, pady=5)
 		self.spinbox_largeur.delete(0,tk.END)
 		self.spinbox_largeur.insert(0,500)
@@ -753,11 +760,11 @@ class App:
 
 	def init_scene(self):
 		# Stockage des parametres dans des variables
-		self.canvas_l = int(self.spinbox_largeur.get())
-		self.canvas_h = int(self.spinbox_hauteur.get())
-		self.taille_y = int(self.spinbox_nb_cases_y.get())
-		self.taille_x = int(self.spinbox_nb_cases_x.get())
-		self.definition = int(self.spinbox_taille_cube.get())
+		canvas_l = int(self.spinbox_largeur.get())
+		canvas_h = int(self.spinbox_hauteur.get())
+		taille_y = int(self.spinbox_nb_cases_y.get())
+		taille_x = int(self.spinbox_nb_cases_x.get())
+		definition = int(self.spinbox_taille_cube.get())
 
 		self.fenetre_config.destroy()
 		self.root.deiconify()
@@ -817,14 +824,14 @@ class App:
 
 		# Canvas et grille
 
-		self.canv = tk.Canvas(self.root,width=self.canvas_l,height=self.canvas_h,bg="white")
-		self.texte_nb_cubes = self.canv.create_text(390,480,fill="black",text="Nombre de cubes dans la scene: "+str(self.__NB_CUBES))
+		self.canv = tk.Canvas(self.root,width=canvas_l,height=canvas_h,bg="white")
+		self.texte_nb_cubes = self.canv.create_text(canvas_l-120,canvas_h-20,fill="black",text="Nombre de cubes dans la scene : "+str(self.NB_CUBES))
 		self.canv.bind("<Motion>",self.on_motion)
 		self.canv.bind("<Button-1>",self.on_click)
 		self.canv.bind("<Button-3>",self.on_cube_click)
 		self.canv.pack()
 
-		self.grille = grille.Grille(self.canv,pdefinition=self.definition,ptaille_x=self.taille_x,ptaille_y=self.taille_y)
+		self.grille = grille.Grille(self.canv,definition,taille_x,taille_y)
 
 
 	# Constructeur de l'application

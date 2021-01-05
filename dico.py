@@ -9,10 +9,9 @@ class Dico(dict):
 		print("new Dico :",self)
 
 	def vider(self):
-		self = {}
+		super().clear()
 
 	def enlever(self,pcoords_grille,phauteur):
 		self.get(pcoords_grille).remove(phauteur)
 		if(self.get(pcoords_grille) == []): # si on a enleve le dernier de la liste, on enleve la cle
-			del self[pcoords_grille] # pas sûr que ça marche
-		print("dico apres enlever :",self)
+			del self[pcoords_grille]

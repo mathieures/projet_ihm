@@ -27,7 +27,7 @@ class Grille:
 		self.__taille_y = ptaille_y # nombre de cases suivant l'axe y (qui va en bas à gauche)
 
 		if porigine == None:
-			self.__origine = (int(pcanvas.cget("width")) / 2,int(pcanvas.cget("height")) / 4) # coordonnees de l'origine (dans le referentiel tkinter)
+			self.__origine = (int(pcanvas.cget("width")) / 2,int(pcanvas.cget("height")) / 3) # coordonnees de l'origine (dans le referentiel tkinter)
 		else:
 			self.__origine = porigine
 			
