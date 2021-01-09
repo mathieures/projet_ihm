@@ -114,6 +114,8 @@ class App:
         )
         try: # On ecrit dans le fichier les coordonnees et couleurs des cubes
             f = open(fichier, "w", encoding = "utf-8")
+        if not fichier:
+            return # l'utilisateur a annule ou ferme la fenetre
         except FileNotFoundError:
             messagebox.showerror(
                 title="Error",
