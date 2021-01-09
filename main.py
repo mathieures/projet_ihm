@@ -112,7 +112,7 @@ class App:
             defaultextension=".ihm",
             filetypes=(("Text files", ".ihm"),("All files", ".*"))
         )
-        if not f:
+        if not fichier:
             return # l'utilisateur a annule ou ferme la fenetre
         try: # On ecrit dans le fichier les coordonnees et couleurs des cubes
             f = open(fichier, "w", encoding = "utf-8")
