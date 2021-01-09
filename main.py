@@ -5,7 +5,10 @@ import dico
 import codes_couleur
 import export_svg
 from tkinter import filedialog, messagebox
-import webbrowser # Pour la documentation
+
+ # Pour la documentation
+import webbrowser
+import os
 
 class App:
 
