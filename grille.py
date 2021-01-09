@@ -1,5 +1,3 @@
-import tkinter as tk
-
 class Grille:
     @property
     def definition(self):
