@@ -1,5 +1,70 @@
 .titre{
-  background-image: linear-gradient(180deg, #fff, #ddd 40%, #ccc);
+  background: repeating-conic-gradient(from 45deg,#ddd, grey);
+  color: black;
+  text-shadow: 1px 1px 2px white;
+}
+
+.wrap {
+  position: relative;
+  left: 150px; top: 80px;
+  perspective: 800px;
+  perspective-origin: 50% 100px;
+}
+
+.cube {
+  position: relative;
+  width: 100px;
+  transform-style: preserve-3d;
+}
+
+.cube div {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+}
+
+.back {
+  border:1px dotted black;
+  background: grey;
+  transform: translateZ(-50px) rotateY(180deg);
+}
+.right {
+  border:1px dotted black;
+  background: grey;
+  transform: rotateY(-270deg) translateX(50px);
+  transform-origin: top right;
+}
+.left {
+  border:1px dotted black;
+  background: grey;
+  transform: rotateY(270deg) translateX(-50px);
+  transform-origin: center left;
+}
+.top {
+  border:1px dotted black;
+  background: grey;
+  transform: rotateX(-90deg) translateY(-50px);
+  transform-origin: top center;
+}
+.bottom {
+  border:1px dotted black;
+  background: grey;
+  transform: rotateX(90deg) translateY(50px);
+  transform-origin: bottom center;
+}
+.front {
+  border:1px dotted black;
+  background: grey;
+  transform: translateZ(50px);
+}
+
+@keyframes spin {
+  from { transform: rotate3d(0); }
+  to { transform: rotate3d(0, 1, 0.5, 6.2832rad);}
+}
+
+.cube {
+  animation: spin 5s infinite linear;
 }
 
 body {
@@ -84,4 +149,5 @@ footer {
 	text-align: center;
 	display : table-row;
 	height: 100px;
+  text-shadow: 1px 1px 2px white;
 }
