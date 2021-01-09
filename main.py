@@ -829,7 +829,8 @@ class App:
         """Affichage des informations"""
         self.nom_cube = tk.StringVar()
         self.pos_cube = tk.StringVar()
-        self.zone_dessin = tk.Canvas(self.fenetre, width=100, height=50, bd=8)
+
+        self.zone_dessin = tk.Canvas(self.lf_infos, width=100, height=50, bd=8)
         self.fleche_haut = self.zone_dessin.create_line(
             60, 30, 60, 15, fill="black", width=10, arrow="last")
         self.fleche_bas = self.zone_dessin.create_line(
@@ -840,18 +841,18 @@ class App:
             60, 38, 90, 38, fill="black", width=10, arrow="last")
         self.zone_dessin.pack()
 
-        self.info_nom = tk.Label(self.fenetre, textvariable=self.nom_cube)
-        self.info_pos = tk.Label(self.fenetre, textvariable=self.pos_cube)
+        self.info_nom = tk.Label(self.lf_infos, textvariable=self.nom_cube)
+        self.info_pos = tk.Label(self.lf_infos, textvariable=self.pos_cube)
         self.info_nom.pack()
         self.info_pos.pack()
 
         self.supprimer_bouton = tk.Button(
-            self.fenetre,
+            self.lf_infos,
             text="Supprimer ce cube",
             command=self.supprimer_cube)
         self.supprimer_bouton.pack()
 
-        self.fenetre.pack(fill="both", expand="yes", side="left")
+        self.lf_infos.pack(fill="both", expand="yes", side="right")
 
 
     def apropos(self):
@@ -979,7 +980,10 @@ class App:
 
         # LabelFrame qui contiendra les informations
         #  d'un cube lorsqu'on clique dessus
-        self.fenetre = tk.LabelFrame(self.root, text="Infos", padx=20, pady=20)
+        self.lf_infos = tk.LabelFrame(
+            self.root,
+            text="Infos",
+            padx=20, pady=20)
         self.init_infos()
         self.cacher_infos()
 
