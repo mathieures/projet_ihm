@@ -19,12 +19,13 @@ Puis exécutez la commande suivante:
 
 ### Librairies utilisées
 
-Tkinter pour la partie graphique
-Webbrowser pour l'accès à la documentation
+Tkinter pour la partie graphique et Webbrowser pour l'accès à la documentation
 
 ---------
 
-Une documentation est également disponible dans l'onglet Aide puis Documentation (raccourci F1) du logiciel, elle est écrite en HTML et CSS
+La documentation est disponible dans l'onglet Aide puis Documentation (raccourci F1) du logiciel, elle est écrite en HTML et CSS  
+
+Des exemples de scènes se trouvent dans le dossier /Exemples
 
 
 ### Licence
