@@ -8,7 +8,6 @@ from tkinter import filedialog, messagebox
 
  # Pour la documentation
 import webbrowser
-import os
 
 class App:
 
