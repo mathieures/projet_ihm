@@ -5,7 +5,10 @@ import dico
 import codes_couleur
 import export_svg
 from tkinter import filedialog, messagebox
-import webbrowser # Pour la documentation
+
+ # Pour la documentation
+import webbrowser
+import os
 
 class App:
 
@@ -404,13 +407,13 @@ class App:
 
         couleur_haut_entry_R = tk.Entry(
             frame_couleur_haut, width=4,
-            justify=tk.CENTER, state="readonly")
+            justify=tk.CENTER)
         couleur_haut_entry_V = tk.Entry(
             frame_couleur_haut, width=4,
-            justify=tk.CENTER, state="readonly")
+            justify=tk.CENTER)
         couleur_haut_entry_B = tk.Entry(
             frame_couleur_haut, width=4,
-            justify=tk.CENTER, state="readonly")
+            justify=tk.CENTER)
 
         self.__entry_RVB_haut = [
             couleur_haut_entry_R,
@@ -421,16 +424,17 @@ class App:
         for i in range(3):
             self.__entry_RVB_haut[i].insert(tk.END, str(triplets[0][i]))
             self.__entry_RVB_haut[i].pack(side=tk.LEFT)
+            self.__entry_RVB_haut[i].config(state='readonly')
 
         couleur_gauche_entry_R = tk.Entry(
             frame_couleur_gauche, width=4,
-            justify=tk.CENTER, state="readonly")
+            justify=tk.CENTER)
         couleur_gauche_entry_V = tk.Entry(
             frame_couleur_gauche, width=4,
-            justify=tk.CENTER, state="readonly")
+            justify=tk.CENTER)
         couleur_gauche_entry_B = tk.Entry(
             frame_couleur_gauche, width=4,
-            justify=tk.CENTER, state="readonly")
+            justify=tk.CENTER)
 
         self.__entry_RVB_gauche = [
             couleur_gauche_entry_R,
@@ -441,16 +445,17 @@ class App:
         for i in range(3):
             self.__entry_RVB_gauche[i].insert(tk.END, str(triplets[1][i]))
             self.__entry_RVB_gauche[i].pack(side=tk.LEFT)
+            self.__entry_RVB_gauche[i].config(state='readonly')
 
         couleur_droite_entry_R = tk.Entry(
             frame_couleur_droite, width=4,
-            justify=tk.CENTER, state="readonly")
+            justify=tk.CENTER)
         couleur_droite_entry_V = tk.Entry(
             frame_couleur_droite, width=4,
-            justify=tk.CENTER, state="readonly")
+            justify=tk.CENTER)
         couleur_droite_entry_B = tk.Entry(
             frame_couleur_droite, width=4,
-            justify=tk.CENTER, state="readonly")
+            justify=tk.CENTER)
 
         self.__entry_RVB_droite = [
             couleur_droite_entry_R,
@@ -461,6 +466,7 @@ class App:
         for i in range(3):
             self.__entry_RVB_droite[i].insert(tk.END, str(triplets[2][i]))
             self.__entry_RVB_droite[i].pack(side=tk.LEFT)
+            self.__entry_RVB_droite[i].config(state='readonly')
 
         couleur_haut_hexa_entry = tk.Entry(
             frame_couleur_haut, width=10, justify=tk.CENTER,
@@ -546,15 +552,20 @@ class App:
             self.__code_gauche_RVB.set(int(nouvelle_couleur[1][1:], 16))
             self.__code_droite_RVB.set(int(nouvelle_couleur[2][1:], 16))
 
+            triplet_temp = codes_couleur.hex2dec(nouvelle_couleur[1])
+            # on modifie chaque entry pour la face en fonction du code hexa
             for i in range(3):
-                # on modifie chaque entry pour la face en fonction du code hexa
-                triplet_temp = codes_couleur.hex2dec(nouvelle_couleur[1])
+                self.__entry_RVB_gauche[i].config(state="normal")
                 self.__entry_RVB_gauche[i].delete(0, tk.END)
                 self.__entry_RVB_gauche[i].insert(tk.END, triplet_temp[i])
+                self.__entry_RVB_gauche[i].config(state="readonly")
+            
+            triplet_temp = codes_couleur.hex2dec(nouvelle_couleur[2])
             for i in range(3):
-                triplet_temp = codes_couleur.hex2dec(nouvelle_couleur[2])
+                self.__entry_RVB_droite[i].config(state="normal")
                 self.__entry_RVB_droite[i].delete(0, tk.END)
                 self.__entry_RVB_droite[i].insert(tk.END, triplet_temp[i])
+                self.__entry_RVB_droite[i].config(state="readonly")
 
         else:
             nouvelle_couleur[1] = self.__str_couleur_gauche.get()
@@ -564,8 +575,10 @@ class App:
         self.__cube_couleur.changer_couleur(nouvelle_couleur)
         # pour chaque face on modifie l'entry en fonction du code hexa
         for i in range(3):
+            self.__entry_RVB_haut[i].config(state="normal")
             self.__entry_RVB_haut[i].delete(0, tk.END)
             self.__entry_RVB_haut[i].insert(tk.END, triplet_haut[i])
+            self.__entry_RVB_haut[i].config(state="readonly")
 
     def update_couleur_gauche(self, valeur):
         val = int(valeur)
@@ -593,12 +606,17 @@ class App:
             # mise a jour des Entries des autres faces
             triplet_temp = codes_couleur.hex2dec(nouvelle_couleur[0])
             for i in range(3):
+                self.__entry_RVB_haut[i].config(state="normal")
                 self.__entry_RVB_haut[i].delete(0, tk.END)
                 self.__entry_RVB_haut[i].insert(tk.END, triplet_temp[i])
+                self.__entry_RVB_haut[i].config(state="readonly")
+            
             triplet_temp = codes_couleur.hex2dec(nouvelle_couleur[2])
             for i in range(3):
+                self.__entry_RVB_droite[i].config(state="normal")
                 self.__entry_RVB_droite[i].delete(0, tk.END)
                 self.__entry_RVB_droite[i].insert(tk.END, triplet_temp[i])
+                self.__entry_RVB_droite[i].config(state="readonly")
 
         else:
             nouvelle_couleur[0] = self.__str_couleur_haut.get()
@@ -607,8 +625,10 @@ class App:
         self.__cube_couleur.changer_couleur(nouvelle_couleur)
         # on modifie les entries
         for i in range(3):
+            self.__entry_RVB_gauche[i].config(state="normal")
             self.__entry_RVB_gauche[i].delete(0, tk.END)
             self.__entry_RVB_gauche[i].insert(tk.END, triplet_gauche[i])
+            self.__entry_RVB_gauche[i].config(state="readonly")
 
     def update_couleur_droite(self, valeur):
         val = int(valeur)
@@ -636,8 +656,11 @@ class App:
             # mise a jour des Entries des autres faces
             triplet_temp = codes_couleur.hex2dec(nouvelle_couleur[0])
             for i in range(3):
+                self.__entry_RVB_haut[i].config(state="normal")
                 self.__entry_RVB_haut[i].delete(0, tk.END)
                 self.__entry_RVB_haut[i].insert(tk.END, triplet_temp[i])
+                self.__entry_RVB_haut[i].config(state="readonly")
+            
             triplet_temp = codes_couleur.hex2dec(nouvelle_couleur[1])
             for i in range(3):
                 self.__entry_RVB_gauche[i].delete(0, tk.END)
@@ -652,8 +675,10 @@ class App:
         self.__cube_couleur.changer_couleur(nouvelle_couleur)
         # on modifie les entries
         for i in range(3):
+            self.__entry_RVB_droite[i].config(state="normal")
             self.__entry_RVB_droite[i].delete(0, tk.END)
             self.__entry_RVB_droite[i].insert(tk.END, triplet_droite[i])
+            self.__entry_RVB_droite[i].config(state="readonly")
 
     def confirmer_couleur(self):
         """
